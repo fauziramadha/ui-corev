@@ -6,11 +6,10 @@ import { H1, P } from "@/components/ui/typography.tsx"
 
 export default function Disclaimer() {
     return (
-        <section className="mx-auto flex h-[70vh] w-[70vw] flex-col items-center justify-center space-y-8">
-            {" "}
+        <section className="mx-auto flex mt-40 max-w-4xl flex-col items-center justify-center">
             <H1>{t("common.disclaimer.label")}</H1>
             <P className={"text-center"}>{t("common.disclaimer.value", { projectName: t("projectName"), coreName: t("coreName") })}</P>
-            <Button asChild>
+            <Button asChild className={"mt-8"}>
                 <Link to={"/"}>
                     <LucideHome />
                     {t("common.disclaimer.button")}

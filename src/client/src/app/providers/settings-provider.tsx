@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useMemo, useState } from "react"
+import { usePersistentState } from "@/hooks/use-localstorage"
+import { AppSettingsContext, type SupportedLocales } from "@/hooks/use-appsettings"
 import type { CountryISO3166_1, Timezone, TMDBOptions } from "@lorenzopant/tmdb"
 import { getCountry } from "@/lib/tmdb.utils"
-import { usePersistentState } from "@/hooks/use-localstorage"
-import { AppSettingsContext, supportedLocales, type SupportedLocales } from "@/hooks/use-appsettings"
 
 const DEFAULT_TMDB_OPTIONS: TMDBOptions = {
     language: "en-US",
@@ -25,53 +25,35 @@ export function AppSettingsProvider({ children }: { children: React.ReactNode })
 
     const [locale, setLocale] = usePersistentState<SupportedLocales>("app.locale", "en")
     const [region, setRegion] = usePersistentState<CountryISO3166_1 | undefined>("app.region", getCountry())
+
     const [showSearch, setShowSearch] = usePersistentState<boolean>("app.showSearch", false)
     const [autoplayNext, setAutoplayNext] = usePersistentState<boolean>("app.autoplayNext", true)
+
     const [tmdbApiKey, setTmdbApiKey] = usePersistentState<string>("app.tmdbApiKey", import.meta.env.VITE_TMDB_API_KEY)
 
-    /**
-     * -----------------------------
-     * Derived TMDB options
-     * -----------------------------
-     */
-    const [tmdbOptions, setTmdbOptions] = useState<TMDBOptions>(() => ({
+    const [tmdbOptions, setTmdbOptions] = useState<TMDBOptions>({
         ...DEFAULT_TMDB_OPTIONS,
         region,
-    }))
+    })
 
-    useEffect(() => {
-        const localeConfig = supportedLocales.find((l) => l.iso639 === locale)
-
-        setTmdbOptions((prev) => ({
-            ...prev,
-            language: localeConfig?.primaryTranslationTmdb ?? "en-US",
-            region,
-        }))
-    }, [locale, region])
-
-    /**
-     * -----------------------------
-     * Context value
-     * -----------------------------
-     */
     const value = useMemo(
         () => ({
             locale,
             region,
             autoplayNext,
-            tmdbApiKey,
-            tmdbOptions,
             standalone,
             showSearch,
+            tmdbApiKey,
+            tmdbOptions,
 
             setLocale,
             setRegion,
             setAutoplayNext,
+            setShowSearch,
             setTmdbApiKey,
             setTmdbOptions,
-            setShowSearch,
         }),
-        [locale, region, autoplayNext, tmdbApiKey, tmdbOptions, standalone, showSearch, setLocale, setRegion, setAutoplayNext, setTmdbApiKey, setShowSearch]
+        [locale, region, autoplayNext, standalone, showSearch, tmdbApiKey, tmdbOptions, setLocale, setRegion, setAutoplayNext, setShowSearch, setTmdbApiKey]
     )
 
     return <AppSettingsContext.Provider value={value}>{children}</AppSettingsContext.Provider>

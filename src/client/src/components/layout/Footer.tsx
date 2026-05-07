@@ -3,10 +3,11 @@ import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
 import { Bug, Film, Github, Info, Tv } from "lucide-react"
 import { t } from "i18next"
+import { Button } from "@/components/ui/button"
 
 export default function Footer() {
     return (
-        <footer id="footer" className="mt-8 rounded-b-2xl border-t border-border py-4 transition-all duration-300 ease-in-out md:py-12">
+        <footer id="footer" className="z-1 bg-background mt-8 border-t border-border py-4 transition-all duration-300 ease-in-out md:py-12">
             <div className="px-4 md:px-6">
                 <div className="mb-6 grid grid-cols-2 gap-6 md:mb-8 md:grid-cols-3 md:gap-8">
                     {/* Brand */}
@@ -90,18 +91,17 @@ export default function Footer() {
                         . All rights reserved.
                     </p>
 
-                    <div className="mt-4 flex flex-wrap justify-center gap-4 md:mt-0">
-                        <Link
-                            to="#footer"
-                            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground md:text-sm"
-                            onClick={(e) => {
+                    <div className="z-1 mt-4 flex flex-wrap justify-center gap-4 md:mt-0">
+                        <Button
+                            onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
                                 e.preventDefault()
                                 toast.success(t("footer.cookie-policy.value"))
                             }}
+                            variant={"outline"}
                         >
                             <Info className="h-4 w-4" />
                             {t("footer.cookie-policy.label")}
-                        </Link>
+                        </Button>
                     </div>
                 </div>
             </div>

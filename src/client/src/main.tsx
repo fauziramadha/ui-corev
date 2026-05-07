@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client"
-import "./index.css"
+import "@/index.css"
+import "@/styles/animation.css"
 import App from "@/app/App"
 import AppProviders from "@/app/AppProviders"
 import { AppSettingsProvider } from "@/app/providers/settings-provider.tsx"

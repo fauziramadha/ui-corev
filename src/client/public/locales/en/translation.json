@@ -9,6 +9,10 @@
         "backLink": "Back Home"
     },
     "common": {
+        "pages": "Pages",
+        "slogan": "Your Open Cinema",
+        "loading": "Loading",
+        "welcome": "Welcome to {{projectName}}!",
         "opensource": {
             "git-url": "https://github.com/cinepro-org/ui",
             "git-platform": "GitHub"
@@ -43,7 +47,7 @@
     },
     "header": {
         "searchPlaceholder": "Search Movie or TV Show...",
-        "githubButton": "Star on {{platform}}"
+        "githubButton": "Star us on {{platform}}!"
     },
     "searchdialog": {
         "placeholder": "Search movies or TV shows...",
@@ -75,7 +79,8 @@
             "language": {
                 "cardlabel": "App Language",
                 "selectlabel": "Available Languages",
-                "placeholder": "Select language"
+                "placeholder": "Select language",
+                "info": "We are working on translating the app to more languages. If you are interested in helping us out, please consider contributing to our translation efforts at {{gitUrl}}."
             },
             "reset": {
                 "title": "Reset all app data?",
@@ -114,20 +119,27 @@
         "omss": {
             "title": "OMSS Server ({{coreName}})",
             "description": "Streaming backend configuration",
-            "label": "OMSS ({{coreName}}) API URL. `localhost` means that your OMSS Server is running locally and only for you.",
+            "label": "OMSS ({{coreName}}) API URL",
             "note": {
                 "title": "CSP Note",
                 "value": "If you are running the app fullstack (i.e. with the fastify backend) and set the VITE_OMSS_API_URL env variable, the website will not be able to make requests to any other site other then TMDB and the OMSS_API_URL you've provided."
-            }
+            },
+            "connection": {
+                "connected": "Connected!",
+                "disconnected": "Disconnected!"
+            },
+            "info": "`localhost` means that your OMSS Server is running locally and only for you."
         },
         "tmdb": {
             "title": "TMDB",
             "description": "TMDB integration",
-            "apiKey": "TMDB API Key (required). This can only be changed by rebuilding the application with the new API key.",
+            "apiKey": "TMDB API Key (required)",
+            "info": "This can only be changed by rebuilding the application with the new API key",
             "region": {
-                "cardlabel": "Region. Will change TMDB's \"Trending Now\" Section etc. to your selected Region. {{projectName}} tries to guess your region based on your browser settings. You probably don't have to change this.",
+                "cardlabel": "Region",
                 "selectlabel": "Regions",
-                "placeholder": "Select region"
+                "placeholder": "Select region",
+                "info": "Will change TMDB's \"Trending Now\" Section etc. to your selected Region. {{projectName}} tries to guess your region based on your browser settings. You probably don't have to change this."
             }
         }
     }

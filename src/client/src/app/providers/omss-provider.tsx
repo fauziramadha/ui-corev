@@ -1,5 +1,5 @@
 import React, { createContext, useEffect, useMemo, useState } from "react"
-import { createOmssClient, type OmssClient, type OmssClientConfig } from "@omss/sdk"
+import { createOmssClient, type OmssClient } from "@omss/sdk"
 import { usePersistentState } from "@/hooks/use-localstorage.ts"
 import { useDebouncedValue } from "@/hooks/use-debounce.ts"
 
@@ -12,17 +12,16 @@ type OmssContextType = {
 
 const OmssContext = createContext<OmssContextType | null>(null)
 
-export function OmssProvider({ children, options }: { children: React.ReactNode; options: OmssClientConfig }) {
+export function OmssProvider({ children }: { children: React.ReactNode; }) {
     const [baseUrl, setBaseUrl] = usePersistentState<string>("app.omssUrl", import.meta.env.VITE_OMSS_API_URL ?? "")
     const [valid, setValid] = useState(false)
     const debouncedBaseUrl = useDebouncedValue(baseUrl, 500)
 
     const client = useMemo(() => {
         return createOmssClient({
-            ...options,
             baseUrl: debouncedBaseUrl,
         })
-    }, [debouncedBaseUrl, options])
+    }, [debouncedBaseUrl])
 
     useEffect(() => {
         let cancelled = false

@@ -1,15 +1,14 @@
 import React, { useMemo } from "react"
-import { TMDB, type TMDBOptions } from "@lorenzopant/tmdb"
+import { TMDB } from "@lorenzopant/tmdb"
 import { TmdbContext } from "@/hooks/use-tmdb"
+import { useAppSettings } from "@/hooks/use-appsettings"
 
-interface TMDBProviderProps {
-    apiKey: string
-    options?: TMDBOptions
-    children: React.ReactNode
-}
+export function TMDBProvider({ children }: { children: React.ReactNode }) {
+    const { tmdbApiKey, tmdbOptions } = useAppSettings()
 
-export function TMDBProvider({ apiKey, options, children }: TMDBProviderProps) {
-    const tmdb = useMemo(() => new TMDB(apiKey, { ...options }), [apiKey, options])
+    const tmdb = useMemo(() => {
+        return new TMDB(tmdbApiKey, tmdbOptions)
+    }, [tmdbApiKey, tmdbOptions])
+
     return <TmdbContext.Provider value={{ tmdb }}>{children}</TmdbContext.Provider>
 }
-

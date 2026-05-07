@@ -2,9 +2,10 @@ import { useEffect, useState } from "react"
 import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandItem, CommandList } from "@/components/ui/command"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTmdb } from "@/hooks/use-tmdb"
+import { useDebouncedValue } from "@/hooks/use-debounce"
 import type { MultiSearchResultItem } from "@lorenzopant/tmdb"
 import { useNavigate, useSearchParams } from "react-router-dom"
-import { LucideClapperboard, LucideFilter, LucidePlay, LucideTv } from "lucide-react"
+import { LucideClapperboard, LucideFilter, LucidePlay, LucideTv, Sparkles } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useAppSettings } from "@/hooks/use-appsettings.ts"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group.tsx"
@@ -14,17 +15,20 @@ type MediaFilter = "all" | "movie" | "tv"
 
 export function SearchDialog() {
     const tmdb = useTmdb()
-    const {showSearch, setShowSearch} = useAppSettings()
+    const { showSearch, setShowSearch } = useAppSettings()
     const navigate = useNavigate()
     const { t } = useTranslation()
 
     const [query, setQuery] = useState("")
+    const debouncedQuery = useDebouncedValue(query, 400)
+
     const [results, setResults] = useState<MultiSearchResultItem[]>([])
     const [loading, setLoading] = useState(false)
     const [searchParams, setSearchParams] = useSearchParams()
 
     const [filter, setFilter] = useState<MediaFilter>("all")
 
+    // read params
     useEffect(() => {
         const q = searchParams.get("q")
         const f = searchParams.get("type") as MediaFilter | null
@@ -40,6 +44,7 @@ export function SearchDialog() {
         }
     }, [searchParams, setShowSearch])
 
+    // keyboard shortcut
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             const nav = navigator as Navigator & { userAgentData?: { platform: string } }
@@ -49,9 +54,9 @@ export function SearchDialog() {
 
             const modKey = isMac ? e.metaKey : e.ctrlKey
 
-            if (modKey && e.key.toLowerCase() === "j") {
+            if (modKey && e.key.toLowerCase() === "f") {
                 e.preventDefault()
-                setShowSearch(!open)
+                setShowSearch(!showSearch)
             }
         }
 
@@ -59,6 +64,7 @@ export function SearchDialog() {
         return () => window.removeEventListener("keydown", handleKeyDown)
     }, [showSearch, setShowSearch])
 
+    // sync URL params
     useEffect(() => {
         if (!showSearch) return
 
@@ -79,31 +85,42 @@ export function SearchDialog() {
         setSearchParams(params, { replace: true })
     }, [query, filter, showSearch, setSearchParams, searchParams])
 
-    // debounce search
+    // debounced search
     useEffect(() => {
-        if (!query) {
+        if (!debouncedQuery) {
             // eslint-disable-next-line
             setResults([])
             return
         }
 
-        const timer = setTimeout(async () => {
+        let cancelled = false
+
+        const fetchResults = async () => {
             setLoading(true)
             try {
                 const res = await tmdb.search.multi({
-                    query,
+                    query: debouncedQuery,
                     language: "en-US",
                 })
-                setResults(res.results ?? [])
+
+                if (!cancelled) {
+                    setResults(res.results ?? [])
+                }
             } catch (err) {
                 console.error(err)
             } finally {
-                setLoading(false)
+                if (!cancelled) {
+                    setLoading(false)
+                }
             }
-        }, 400)
+        }
 
-        return () => clearTimeout(timer)
-    }, [query, tmdb])
+        fetchResults()
+
+        return () => {
+            cancelled = true
+        }
+    }, [debouncedQuery, tmdb])
 
     const handleSelect = (item: MultiSearchResultItem) => {
         setShowSearch(false)
@@ -117,7 +134,7 @@ export function SearchDialog() {
         }
     }
 
-    // group results
+    // filtering
     const filteredResults = results.filter((r) => {
         if (filter === "all") return true
         return r.media_type === filter
@@ -156,13 +173,18 @@ export function SearchDialog() {
                 ) : (
                     <div className="flex h-14 w-10 items-center justify-center rounded-md bg-muted">{icon}</div>
                 )}
+
                 <div className="flex flex-col overflow-hidden">
                     <span className="truncate text-sm font-medium">{title}</span>
 
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>{subtitle}</span>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                        {rating !== null && (
+                            <span className="flex items-center gap-1">
+                                <Sparkles width={4} height={4} className={"h-4"} /> {rating.toFixed(1)}
+                            </span>
+                        )}
 
-                        {rating !== null && <span className="flex items-center gap-1">⭐ {rating.toFixed(1)}</span>}
+                        <span>{subtitle}</span>
                     </div>
                 </div>
             </CommandItem>
@@ -189,7 +211,7 @@ export function SearchDialog() {
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <button className="flex items-center gap-1 pr-1">
-                                        <LucideFilter className={`h-4 w-4 ${filter !== "all" ? "text-primary" : "text-muted-foreground"}`} />{" "}
+                                        <LucideFilter className={`h-4 w-4 ${filter !== "all" ? "text-primary" : "text-muted-foreground"}`} />
                                     </button>
                                 </DropdownMenuTrigger>
 
@@ -212,7 +234,8 @@ export function SearchDialog() {
                             </DropdownMenu>
                         </InputGroupAddon>
                     </InputGroup>
-                </div>{" "}
+                </div>
+
                 <CommandList>
                     {loading && (
                         <div className="space-y-2 p-2">

@@ -11,22 +11,24 @@ import {
 } from "@/components/ui/alert-dialog"
 import { LucideArrowRight, LucideXCircle } from "lucide-react"
 
-export default function ConfirmButton({
+export default function ConfirmDialog({
     trigger,
     title,
     description,
     onConfirm,
     variant = "destructive",
+    classname = ""
 }: {
     trigger: React.ReactNode
     title: string
     description: string
     onConfirm: () => void
     variant?: "default" | "destructive"
+    classname?: string
 }) {
     return (
         <AlertDialog>
-            <AlertDialogTrigger asChild>{trigger}</AlertDialogTrigger>
+            <AlertDialogTrigger className={classname} asChild>{trigger}</AlertDialogTrigger>
 
             <AlertDialogContent>
                 <AlertDialogHeader>

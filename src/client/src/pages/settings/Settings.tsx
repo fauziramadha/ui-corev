@@ -6,28 +6,31 @@ import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAppSettings } from "@/hooks/use-appsettings.ts"
-import { supportedLocales, type SupportedLocales, supportedRegions } from "@/hooks/use-appsettings"
+import { supportedLocales, type SupportedLocales } from "@/hooks/use-appsettings"
 import type { CountryISO3166_1 } from "@lorenzopant/tmdb"
 import { maskKey } from "@/lib/strings.utils.ts"
 import { useOmss } from "@/hooks/use-omss.ts"
 import { Badge } from "@/components/ui/badge.tsx"
 import { Item, ItemContent, ItemHeader } from "@/components/ui/item.tsx"
 import { H1, H4, P } from "@/components/ui/typography.tsx"
-import { AlertTriangle, RefreshCcw } from "lucide-react"
+import { AlertTriangle, RefreshCcw, Star } from "lucide-react"
 import { useHistory } from "@/hooks/use-history.ts"
 import { Button } from "@/components/ui/button"
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty"
 import { Trash2 } from "lucide-react"
-import ConfirmButton from "@/components/common/ConfirmButton.tsx"
+import ConfirmDialog from "@/components/layout/ConfirmDialog.tsx"
+import { supportedRegions, useTmdb } from "@/hooks/use-tmdb.ts"
+import { Link } from "react-router-dom"
 
 export default function Settings() {
     const { t } = useTranslation()
-    const { region, locale, autoplayNext, tmdbApiKey, setLocale, setAutoplayNext, setRegion, setTmdbApiKey, standalone } = useAppSettings()
+    const { region, locale, autoplayNext, tmdbApiKey, setLocale, setAutoplayNext, setRegion, standalone } = useAppSettings()
     const { valid, baseUrl, setBaseUrl } = useOmss()
     const { clear, history, remove } = useHistory()
+    const {cache} = useTmdb()
 
     return (
-        <section className="mx-auto mt-4 h-[68vh] max-w-3xl space-y-6">
+        <section className="mx-auto mt-22 max-w-3xl space-y-6">
             <H1>{t("settingsPage.title")}</H1>
 
             <Tabs defaultValue="general" className="w-full">
@@ -46,14 +49,29 @@ export default function Settings() {
                         <CardHeader>
                             <CardTitle>{t("settingsPage.general.title")}</CardTitle>
                             <CardDescription>{t("settingsPage.general.description")}</CardDescription>
+                            <CardAction>
+                                <Button asChild>
+                                    <Link to={t("common.opensource.git-url")} target="_blank" rel="noopener noreferrer">
+                                        <Star />
+                                        <span className="ml-1 hidden sm:inline">
+                                            {t("header.githubButton", {
+                                                platform: t("common.opensource.git-platform"),
+                                            })}
+                                        </span>
+                                    </Link>
+                                </Button>
+                            </CardAction>
                         </CardHeader>
 
                         <CardContent className="space-y-6">
-                            <div className="space-y-2">
-                                <Label>{t("settingsPage.general.language.cardlabel")}</Label>
+                            <div className="mt-3 flex justify-between">
+                                <div>
+                                    <Label>{t("settingsPage.general.language.cardlabel")}</Label>
+                                    <span className="flex pt-1 text-muted-foreground">{t("settingsPage.general.language.info", { gitUrl: t("common.opensource.git-url") })}</span>
+                                </div>
 
                                 <Select value={locale} onValueChange={(value) => setLocale(value as SupportedLocales)}>
-                                    <SelectTrigger className="w-40">
+                                    <SelectTrigger className="w-80">
                                         <SelectValue placeholder={t("settingsPage.general.language.placeholder")} />
                                     </SelectTrigger>
 
@@ -71,20 +89,21 @@ export default function Settings() {
                                 </Select>
                             </div>
 
-                            <div className="mt-3 space-y-2">
-                                <Label>{t("settingsPage.general.reset.label")}</Label>
-
-                                <span className="flex pt-1 text-muted-foreground">{t("settingsPage.general.reset.info")}</span>
-
-                                <ConfirmButton
+                            <div className="mt-3 flex justify-between">
+                                <div>
+                                    <Label>{t("settingsPage.general.reset.label")}</Label>
+                                    <span className="flex pt-1 text-muted-foreground">{t("settingsPage.general.reset.info")}</span>
+                                </div>
+                                <ConfirmDialog
                                     title={t("settingsPage.general.reset.title")}
                                     description={t("settingsPage.general.reset.description")}
                                     onConfirm={() => {
                                         localStorage.clear()
                                         location.reload()
                                     }}
+                                    classname="w-40"
                                     trigger={
-                                        <Button variant="destructive" size="sm">
+                                        <Button variant="destructive">
                                             <RefreshCcw />
                                             {t("settingsPage.general.reset.button")}
                                         </Button>
@@ -103,7 +122,7 @@ export default function Settings() {
                             <CardDescription>{t("settingsPage.history.description")}</CardDescription>
 
                             <CardAction>
-                                <ConfirmButton
+                                <ConfirmDialog
                                     title={t("settingsPage.history.clear.title")}
                                     description={t("settingsPage.history.clear.description")}
                                     onConfirm={clear}
@@ -139,7 +158,7 @@ export default function Settings() {
                                                     <P>{title}</P>
                                                 </ItemContent>
 
-                                                <ConfirmButton
+                                                <ConfirmDialog
                                                     title={t("settingsPage.history.item.removeTitle")}
                                                     description={t("settingsPage.history.item.removeDescription")}
                                                     onConfirm={() => remove(item)}
@@ -186,12 +205,16 @@ export default function Settings() {
                         <CardHeader>
                             <CardTitle>{t("settingsPage.omss.title", { coreName: t("coreName") })}</CardTitle>
                             <CardDescription>{t("settingsPage.omss.description")}</CardDescription>
-                            <CardAction>{valid ? <Badge>Connected!</Badge> : <Badge variant="destructive">Disconnected!</Badge>}</CardAction>
+                            <CardAction>
+                                {valid ? <Badge>{t("settingsPage.omss.connection.connected")}</Badge> : <Badge variant="destructive">{t("settingsPage.omss.connection.disconnected")}</Badge>}
+                            </CardAction>
                         </CardHeader>
 
                         <CardContent>
                             <div className="space-y-2">
                                 <Label htmlFor="omss">{t("settingsPage.omss.label", { coreName: t("coreName") })}</Label>
+
+                                <span className="flex pt-1 text-muted-foreground">{t("settingsPage.omss.info")}</span>
 
                                 <Input id="omss" value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} placeholder="http://localhost:3000" />
 
@@ -224,19 +247,30 @@ export default function Settings() {
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
                                 <Label htmlFor="tmdb">{t("settingsPage.tmdb.apiKey")}</Label>
-
-                                <Input disabled id="tmdb" value={maskKey(tmdbApiKey, 10)} onChange={(e) => setTmdbApiKey(e.target.value)} />
+                                <span className="flex pt-1 text-muted-foreground">{t("settingsPage.tmdb.info")}</span>
+                                <Input disabled id="tmdb" value={maskKey(tmdbApiKey, 10)} />
                             </div>
 
-                            <div className="w-full space-y-2">
-                                <Label>
-                                    {t("settingsPage.tmdb.region.cardlabel", {
-                                        projectName: t("projectName"),
-                                    })}
-                                </Label>
+                            <div className="mt-3 flex justify-between">
+                                <div>
+                                    <Label>{t("settingsPage.tmdb.region.cardlabel")}</Label>
 
-                                <Select value={region} onValueChange={(value) => setRegion(value as CountryISO3166_1)}>
-                                    <SelectTrigger className="w-1/2">
+                                    <span className="flex pt-1 pr-4 text-muted-foreground">
+                                        {t("settingsPage.tmdb.region.info", {
+                                            projectName: t("projectName"),
+                                        })}
+                                    </span>
+                                </div>
+
+                                <Select
+                                    value={region}
+                                    onValueChange={(value) => {
+                                        setRegion(value as CountryISO3166_1)
+                                        cache?.clear()
+                                        location.reload()
+                                    }}
+                                >
+                                    <SelectTrigger className="w-3/5">
                                         <SelectValue placeholder={t("settingsPage.tmdb.region.placeholder")} />
                                     </SelectTrigger>
 

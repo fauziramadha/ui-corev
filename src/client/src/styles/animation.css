@@ -1,0 +1,14 @@
+@keyframes carousel-progress {
+    from {
+        transform: scaleX(0);
+    }
+
+    to {
+        transform: scaleX(1);
+    }
+}
+
+.animate-carousel-progress {
+    animation: carousel-progress 6500ms linear forwards;
+    will-change: transform;
+}
