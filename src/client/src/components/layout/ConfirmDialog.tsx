@@ -17,7 +17,7 @@ export default function ConfirmDialog({
     description,
     onConfirm,
     variant = "destructive",
-    classname = ""
+    classname = "",
 }: {
     trigger: React.ReactNode
     title: string
@@ -28,7 +28,9 @@ export default function ConfirmDialog({
 }) {
     return (
         <AlertDialog>
-            <AlertDialogTrigger className={classname} asChild>{trigger}</AlertDialogTrigger>
+            <AlertDialogTrigger className={classname} asChild>
+                {trigger}
+            </AlertDialogTrigger>
 
             <AlertDialogContent>
                 <AlertDialogHeader>
@@ -37,9 +39,13 @@ export default function ConfirmDialog({
                 </AlertDialogHeader>
 
                 <AlertDialogFooter>
-                    <AlertDialogCancel><LucideXCircle/>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel>
+                        <LucideXCircle />
+                        Cancel
+                    </AlertDialogCancel>
                     <AlertDialogAction onClick={onConfirm} className={variant === "destructive" ? "text-destructive-foreground bg-destructive" : ""}>
-                        Continue<LucideArrowRight/>
+                        Continue
+                        <LucideArrowRight />
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>

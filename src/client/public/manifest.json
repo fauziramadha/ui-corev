@@ -1,56 +1,56 @@
 {
-  "name": "CinePro",
-  "short_name": "CinePro",
-  "description": "CinePro is a modern, open-source web app for browsing and streaming movies and TV shows directly in your browser without ads and tracking. Ever! Powered by CinePro Core.",
-  "author": "CinePro Foundation",
-  "lang": "en-US",
-  "dir": "auto",
-  "start_url": "/",
-  "scope": "/",
-  "display": "standalone",
-  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
-  "orientation": "any",
-  "theme_color": "#ea383e",
-  "background_color": "#141414",
-  "categories": ["entertainment", "video", "streaming"],
-  "thumbnail": "favicon.svg",
-  "icons": [
-    {
-      "src": "favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    },
-    {
-      "src": "favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
-    }
-  ],
-  "shortcuts": [
-    {
-      "name": "Browse Movies",
-      "short_name": "Movies",
-      "description": "Browse the latest movies",
-      "url": "/movies",
-      "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
-    },
-    {
-      "name": "Browse TV Shows",
-      "short_name": "TV Shows",
-      "description": "Browse TV series and episodes",
-      "url": "/shows",
-      "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
-    },
-    {
-      "name": "Settings",
-      "short_name": "Settings",
-      "description": "Configure CinePro/ui to your liking.",
-      "url": "/settings",
-      "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
-    }
-  ],
-  "prefer_related_applications": false,
-  "handle_links": "preferred"
+    "name": "CinePro",
+    "short_name": "CinePro",
+    "description": "CinePro is a modern, open-source web app for browsing and streaming movies and TV shows directly in your browser without ads and tracking. Ever! Powered by CinePro Core.",
+    "author": "CinePro Foundation",
+    "lang": "en-US",
+    "dir": "auto",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
+    "orientation": "any",
+    "theme_color": "#ea383e",
+    "background_color": "#141414",
+    "categories": ["entertainment", "video", "streaming"],
+    "thumbnail": "favicon.svg",
+    "icons": [
+        {
+            "src": "favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "maskable"
+        }
+    ],
+    "shortcuts": [
+        {
+            "name": "Browse Movies",
+            "short_name": "Movies",
+            "description": "Browse the latest movies",
+            "url": "/movies",
+            "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+        },
+        {
+            "name": "Browse TV Shows",
+            "short_name": "TV Shows",
+            "description": "Browse TV series and episodes",
+            "url": "/shows",
+            "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+        },
+        {
+            "name": "Settings",
+            "short_name": "Settings",
+            "description": "Configure CinePro/ui to your liking.",
+            "url": "/settings",
+            "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+        }
+    ],
+    "prefer_related_applications": false,
+    "handle_links": "preferred"
 }

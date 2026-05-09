@@ -1,7 +1,103 @@
+import { useTmdb } from "@/hooks/use-tmdb"
+import { HeroCarousel } from "@/components/media/HeroCarousel/HeroCarousel"
+import { MovieRail } from "@/components/media/TypedRails.tsx"
+import { useEffect, useState } from "react"
+import type { Genre, TrendingParams } from "@lorenzopant/tmdb"
+import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectValue, SelectTrigger } from "@/components/ui/select.tsx"
+
 export default function Movies() {
+    const tmdb = useTmdb()
+    const [trendingRange, setTrendingRange] = useState<TrendingParams>({time_window: "day"})
+    const [genres, setGenres] = useState<Genre[]>([])
+    const [selectedGenre, setSelectedGenre] = useState<Genre | null>(null)
+
+    useEffect(() => {
+        let mounted = true
+
+        async function loadGenres() {
+            try {
+                const data = await tmdb.genres.movie_list()
+                if (mounted) {
+                    setGenres(data.genres)
+                    setSelectedGenre(data.genres[0])
+                }
+            } catch (e) {
+                console.error(e)
+            }
+        }
+
+        loadGenres()
+
+        return () => {
+            mounted = false
+        }
+    }, [tmdb.genres])
+
     return (
-        <section className="space-y-8">
-            some content for movies
-        </section>
+        <div className="min-h-screen overflow-hidden">
+            <HeroCarousel tmdb={tmdb} fetcher={() => Promise.all([tmdb.movie_lists.now_playing()])} />
+
+            <div className="pointer-events-none relative -mt-12 h-13">
+                <div className="absolute inset-0 bg-linear-to-b from-transparent via-background/70 to-background py-4" />
+            </div>
+
+            <section className="flex flex-col gap-8 bg-background p-8">
+                <MovieRail
+                    title={
+                        <div className={"flex items-center justify-between"}>
+                            <h2 className="text-2xl font-semibold">Trending Movies</h2>
+                            <div className="ml-4 flex items-center gap-2">
+                                <Button onClick={() => setTrendingRange({ time_window: "day" })} variant={trendingRange.time_window === "day" ? "default" : "secondary"}>
+                                    Today
+                                </Button>
+                                <Button onClick={() => setTrendingRange({ time_window: "week" })} variant={trendingRange.time_window === "week" ? "default" : "secondary"}>
+                                    This Week
+                                </Button>
+                            </div>
+                        </div>
+                    }
+                    fetcher={() => tmdb.trending.movies(trendingRange)}
+                />
+
+                <MovieRail
+                    title={
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-2xl font-semibold">{selectedGenre ? `${selectedGenre.name} Movies` : "Select Genre"}</h2>
+
+                            <Select
+                                value={selectedGenre?.id?.toString()}
+                                onValueChange={(value) => {
+                                    const genre = genres.find((g) => g.id.toString() === value)
+
+                                    if (genre) {
+                                        setSelectedGenre(genre)
+                                    }
+                                }}
+                            >
+                                <SelectTrigger className="w-55">
+                                    <SelectValue placeholder="Select Genre" />
+                                </SelectTrigger>
+
+                                <SelectContent>
+                                    <SelectGroup>
+                                        {genres.map((genre) => (
+                                            <SelectItem key={genre.id} value={genre.id.toString()}>
+                                                {genre.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    }
+                    fetcher={() => tmdb.discover.movie({ with_genres: selectedGenre?.id })}
+                />
+
+                <MovieRail title="Popular Movies" fetcher={() => tmdb.movie_lists.popular({})} />
+
+                <MovieRail title="Top Rated Movies" fetcher={() => tmdb.movie_lists.top_rated()} />
+            </section>
+        </div>
     )
 }

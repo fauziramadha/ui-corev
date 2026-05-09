@@ -9,6 +9,8 @@
         "backLink": "Back Home"
     },
     "common": {
+        "all": "All",
+        "results": "Results",
         "pages": "Pages",
         "slogan": "Your Open Cinema",
         "loading": "Loading",

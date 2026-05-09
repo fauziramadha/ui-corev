@@ -57,7 +57,7 @@ export default function Settings() {
     const { cache } = useTmdb()
 
     return (
-        <section className="mx-auto mt-25 max-w-3xl min-h-[60vh] space-y-6">
+        <section className="mx-auto mt-25 min-h-[60vh] max-w-3xl space-y-6">
             <H1>{t("settingsPage.title")}</H1>
 
             <Tabs
@@ -196,7 +196,7 @@ export default function Settings() {
                                         const title = item.kind === "movie" ? item.item.title : `${item.item.tvshowtitle} • S${item.item.season_number}E${item.item.episode_number}`
 
                                         return (
-                                            <Item key={title} className="flex items-center justify-between border-dashed border-border">
+                                            <Item key={title} className="lenis-stopped flex items-center justify-between border-dashed border-border">
                                                 <ItemContent>
                                                     <P>{title}</P>
                                                 </ItemContent>

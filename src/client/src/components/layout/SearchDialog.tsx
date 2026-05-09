@@ -34,7 +34,6 @@ export function SearchDialog() {
         const f = searchParams.get("type") as MediaFilter | null
 
         if (q) {
-            // eslint-disable-next-line
             setQuery(q)
             setShowSearch(true)
         }
@@ -88,7 +87,6 @@ export function SearchDialog() {
     // debounced search
     useEffect(() => {
         if (!debouncedQuery) {
-            // eslint-disable-next-line
             setResults([])
             return
         }
@@ -97,10 +95,10 @@ export function SearchDialog() {
 
         const fetchResults = async () => {
             setLoading(true)
+
             try {
                 const res = await tmdb.search.multi({
                     query: debouncedQuery,
-                    language: "en-US",
                 })
 
                 if (!cancelled) {
@@ -140,9 +138,6 @@ export function SearchDialog() {
         return r.media_type === filter
     })
 
-    const movies = filteredResults.filter((r) => r.media_type === "movie")
-    const tv = filteredResults.filter((r) => r.media_type === "tv")
-
     const renderItem = (item: MultiSearchResultItem) => {
         let title = ""
         let subtitle = ""
@@ -180,7 +175,8 @@ export function SearchDialog() {
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         {rating !== null && (
                             <span className="flex items-center gap-1">
-                                <Sparkles width={4} height={4} className={"h-4"} /> {rating.toFixed(1)}
+                                <Sparkles width={4} height={4} className="h-4" />
+                                {rating.toFixed(1)}
                             </span>
                         )}
 
@@ -196,11 +192,12 @@ export function SearchDialog() {
             open={showSearch}
             onOpenChange={(o) => {
                 setShowSearch(o)
+
                 if (!o) {
                     setSearchParams({}, { replace: true })
                 }
             }}
-            className="max-h-[80vh] w-[95vw] max-w-180 transition-transform sm:w-150 sm:scale-[1.05] md:w-180 md:scale-[1.20]"
+            className="lenis-stopped lenis-disabled max-h-[80vh] w-[95vw] max-w-180 transition-transform sm:w-150 sm:scale-[1.05] md:w-180 md:scale-[1.20]"
         >
             <Command>
                 <div className="px-2 pt-2">
@@ -218,17 +215,17 @@ export function SearchDialog() {
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={() => setFilter("all")}>
                                         <LucidePlay className="mr-2 h-4 w-4" />
-                                        All
+                                        {t("common.all")}
                                     </DropdownMenuItem>
 
                                     <DropdownMenuItem onClick={() => setFilter("movie")} className={filter === "movie" ? "text-primary" : ""}>
                                         <LucideClapperboard className="mr-2 h-4 w-4" />
-                                        Movies
+                                        {t("common.movie.plural")}
                                     </DropdownMenuItem>
 
                                     <DropdownMenuItem onClick={() => setFilter("tv")} className={filter === "tv" ? "text-primary" : ""}>
                                         <LucideTv className="mr-2 h-4 w-4" />
-                                        TV Shows
+                                        {t("common.tvShow.plural")}
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -253,9 +250,11 @@ export function SearchDialog() {
                         </CommandEmpty>
                     )}
 
-                    {!loading && movies.length > 0 && <CommandGroup heading={t("common.movie.plural")}>{movies.map(renderItem)}</CommandGroup>}
-
-                    {!loading && tv.length > 0 && <CommandGroup heading={t("common.tvShow.plural")}>{tv.map(renderItem)}</CommandGroup>}
+                    {!loading && filteredResults.length > 0 && (
+                        <CommandGroup heading={filter === "movie" ? t("common.movie.plural") : filter === "tv" ? t("common.tvShow.plural") : t("common.results")}>
+                            {filteredResults.map(renderItem)}
+                        </CommandGroup>
+                    )}
                 </CommandList>
             </Command>
         </CommandDialog>

@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react"
-import type {HistoryContextType} from "@/app/providers/history-provider"
+import type { HistoryContextType } from "@/app/providers/history-provider"
 
 export const HistoryContext = createContext<HistoryContextType | null>(null)
 

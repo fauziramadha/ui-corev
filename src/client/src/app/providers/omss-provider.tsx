@@ -12,7 +12,7 @@ type OmssContextType = {
 
 const OmssContext = createContext<OmssContextType | null>(null)
 
-export function OmssProvider({ children }: { children: React.ReactNode; }) {
+export function OmssProvider({ children }: { children: React.ReactNode }) {
     const [baseUrl, setBaseUrl] = usePersistentState<string>("app.omssUrl", import.meta.env.VITE_OMSS_API_URL ?? "")
     const [valid, setValid] = useState(false)
     const debouncedBaseUrl = useDebouncedValue(baseUrl, 500)

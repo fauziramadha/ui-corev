@@ -73,7 +73,7 @@ export default function StartupOverlay() {
                     <H2 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">{t("projectName")}</H2>
 
                     <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                        <div className={`h-full rounded-full bg-linear-to-r from-primary via-accent to-primary animate-startup-loading-bar`} />
+                        <div className={`animate-startup-loading-bar h-full rounded-full bg-linear-to-r from-primary via-accent to-primary`} />
                     </div>
 
                     <H4 className="text-xs tracking-[0.3em] text-muted-foreground uppercase italic">{t("common.loading")}</H4>

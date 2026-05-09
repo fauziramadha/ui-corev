@@ -91,4 +91,3 @@ export function List({ children, className = "", ...props }: Props) {
         </ul>
     )
 }
-

@@ -1,18 +1,18 @@
+import { lazy, Suspense } from "react"
 import { Toaster } from "@/components/ui/sonner"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import { useSidebar } from "@/components/ui/sidebar.tsx"
-
 import SideBar from "@/components/sidebar/SideBar"
 import Footer from "@/components/layout/Footer"
 import Header from "@/components/layout/Header"
-
-import HomePage from "@/pages/home/Home"
-import MoviesPage from "@/pages/movies/Movies"
-import ShowsPage from "@/pages/shows/Shows"
-import NotFound from "@/pages/404/NotFound"
-import Settings from "@/pages/settings/Settings"
-import Disclaimer from "@/pages/disclaimer/Disclaimer"
 import StartupOverlay from "@/components/animations/StartupOverlay.tsx"
+
+const HomePage = lazy(() => import("@/pages/home/Home"))
+const MoviesPage = lazy(() => import("@/pages/movies/Movies"))
+const ShowsPage = lazy(() => import("@/pages/shows/Shows"))
+const NotFound = lazy(() => import("@/pages/404/NotFound"))
+const Settings = lazy(() => import("@/pages/settings/Settings"))
+const Disclaimer = lazy(() => import("@/pages/disclaimer/Disclaimer"))
 
 export default function App() {
     const { open, setOpen } = useSidebar()
@@ -28,6 +28,7 @@ export default function App() {
                             <div className="absolute -top-16 -left-16 h-[20vw] max-h-50 min-h-25 w-[20vw] max-w-50 min-w-25 rounded-full bg-primary/10 blur-3xl" />
                         </div>
                     </div>
+
                     {/* Sidebar */}
                     <SideBar />
 
@@ -38,17 +39,27 @@ export default function App() {
                     />
 
                     <Header />
+
                     {/* MAIN CONTENT */}
                     <main className="mx-auto w-full flex-1 space-y-6">
-                        <Routes>
-                            <Route path="/" element={<HomePage />} />
-                            <Route path="/movies" element={<MoviesPage />} />
-                            <Route path="/shows" element={<ShowsPage />} />
-                            <Route path="/settings" element={<Settings />} />
-                            <Route path="/disclaimer" element={<Disclaimer />} />
-                            <Route path="*" element={<NotFound />} />
-                        </Routes>
+                        <Suspense
+                            fallback={
+                                <div className="flex min-h-[50vh] items-center justify-center">
+                                    <div className="h-10 w-10 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                                </div>
+                            }
+                        >
+                            <Routes>
+                                <Route path="/" element={<HomePage />} />
+                                <Route path="/movies" element={<MoviesPage />} />
+                                <Route path="/shows" element={<ShowsPage />} />
+                                <Route path="/settings" element={<Settings />} />
+                                <Route path="/disclaimer" element={<Disclaimer />} />
+                                <Route path="*" element={<NotFound />} />
+                            </Routes>
+                        </Suspense>
                     </main>
+
                     <Footer />
                 </div>
 

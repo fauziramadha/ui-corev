@@ -6,8 +6,15 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { ThemeProvider } from "@/app/providers/theme-provider"
 import { HistoryProvider } from "@/app/providers/history-provider"
 import "@/app/i18n/i18n"
+import "lenis/dist/lenis.css"
+import Lenis from "lenis"
 
 export default function AppProviders({ children }: { children: ReactNode }) {
+    new Lenis({
+        autoRaf: true,
+        prevent: (node) => node.classList.contains("lenis-disabled"),
+    })
+
     return (
         <ThemeProvider defaultTheme="dark" storageKey="app-theme">
             <TooltipProvider delayDuration={150}>
