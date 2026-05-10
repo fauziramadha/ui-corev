@@ -20,8 +20,10 @@ export function useHeroSlides(tmdb: TMDB, fetcher: HeroFetcherResult) {
                 const mixed = await resolveHeroFetcher(fetcher)
                 const detailed = await fetchDetailedMedia(mixed, tmdb)
 
+                const filtered = detailed.filter((m) => m.images.logos.length > 0 && m.images.backdrops.length > 0)
+
                 if (!mounted) return
-                const slides = toHeroSlides(detailed)
+                const slides = toHeroSlides(filtered)
 
                 setSlides(slides)
             } catch (e) {
