@@ -1,7 +1,8 @@
 import * as React from "react"
-import { Card, CardContent } from "@/components/ui/card"
-import { cn } from "@/lib/utils"
-import { Sparkles } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card.tsx"
+import { cn } from "@/lib/utils.ts"
+import { Star } from "lucide-react"
+import { useMediaDrawer } from "@/components/media/drawer/hooks/useMediaDrawer"
 
 export interface MediaCardProps {
     title: string
@@ -10,14 +11,16 @@ export interface MediaCardProps {
     aspectRatio?: "portrait" | "landscape"
     className?: string
     type: "movie" | "tv"
-    id: string | number
+    id: number
     rating: number
     year: number
 }
 
-export const MediaCard = React.forwardRef<HTMLDivElement, MediaCardProps>(({ title, imagePath, imageAlt, aspectRatio = "portrait", className, rating, year }, ref) => {
+export const MediaCard = React.forwardRef<HTMLDivElement, MediaCardProps>(({ title, imagePath, imageAlt, aspectRatio = "portrait", className, rating, year, id, type }, ref) => {
+    const { open } = useMediaDrawer()
+
     return (
-        <Card ref={ref} className={cn("group overflow-hidden border-none py-0 transition-all", className)}>
+        <Card ref={ref} className={cn("group overflow-hidden border-none py-0 transition-all", className)} onClick={() => open({ type: type, id: id })}>
             <CardContent className="p-0">
                 <div className={cn("relative overflow-hidden rounded-md bg-muted", aspectRatio === "portrait" ? "aspect-2/3" : "aspect-video")}>
                     <img
@@ -38,7 +41,7 @@ export const MediaCard = React.forwardRef<HTMLDivElement, MediaCardProps>(({ tit
 
                             <div className={"mt-1 flex w-full justify-between text-xs font-medium"}>
                                 <span className={"flex items-center gap-2"}>
-                                    <Sparkles height={15} width={15} /> {rating.toFixed(1)}
+                                    <Star height={15} width={15} /> {rating.toFixed(1)}
                                 </span>
                                 <span>{year}</span>
                             </div>

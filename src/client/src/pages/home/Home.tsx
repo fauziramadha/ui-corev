@@ -1,6 +1,6 @@
 import { useTmdb } from "@/hooks/use-tmdb"
 import { HeroCarousel } from "@/components/media/HeroCarousel/HeroCarousel"
-import { MovieRail, TvRail } from "@/components/media/TypedRails.tsx"
+import { MovieRail, TvRail } from "@/components/media/MediaRail/TypedRails.tsx"
 
 export function HomePage() {
     const tmdb = useTmdb()

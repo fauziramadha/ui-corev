@@ -20,13 +20,15 @@ import { useTranslation } from "react-i18next"
 import { useHistory } from "@/hooks/use-history"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button.tsx"
+import { useMediaDrawer } from "@/components/media/drawer/hooks/useMediaDrawer.ts"
 
 export default function SideBar() {
-    const { setOpen } = useSidebar()
+    const { setOpen, setOpenMobile } = useSidebar()
     const { t } = useTranslation()
     const navigate = useNavigate()
     const location = useLocation()
     const { history } = useHistory()
+    const { isVisible } = useMediaDrawer()
 
     const isActive = (path: string) => location.pathname === path
 
@@ -36,11 +38,12 @@ export default function SideBar() {
 
     const clickHandler = (path: string) => {
         setOpen(false)
+        setOpenMobile(false)
         navigate(path)
     }
 
     return (
-        <Sidebar side="left" variant="floating" collapsible="offcanvas" className={"z-30"}>
+        <Sidebar side="left" variant="floating" collapsible="offcanvas" className={"z-30" + (isVisible ? " hidden" : "")}>
             {/* Header */}
             <SidebarHeader>
                 <div onClick={() => clickHandler("/")} className="flex cursor-pointer items-center gap-3 px-2 py-2">

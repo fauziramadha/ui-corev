@@ -1,6 +1,8 @@
-import type { MovieDetailsWithAppends, TVDetailsWithAppends, PaginatedResponse, MovieResultItem, TVSeriesResultItem } from "@lorenzopant/tmdb"
+import type { MovieDetailsWithAppends, MovieResultItem, PaginatedResponse, TVDetailsWithAppends, TVSeriesResultItem } from "@lorenzopant/tmdb"
 
 export type HeroSlide = {
+    id: number
+    type: "movie" | "tv"
     title: string
     year: string
     rating: string

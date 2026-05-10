@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "tsx src/server/index.ts --dev",
-        "start": "cross-env NODE_ENV=production node build/server/app.js",
+        "start": "cross-env NODE_ENV=production node build/server/index.js",
         "build": "npm run build:server && npm run build:client",
         "build:client": "vite build",
         "format": "prettier --write .",

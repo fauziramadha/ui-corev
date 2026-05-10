@@ -1,11 +1,13 @@
 import { lazy, Suspense } from "react"
 import { Toaster } from "@/components/ui/sonner"
-import { BrowserRouter, Route, Routes } from "react-router-dom"
+import { Route, Routes } from "react-router-dom"
 import { useSidebar } from "@/components/ui/sidebar.tsx"
 import SideBar from "@/components/sidebar/SideBar"
 import Footer from "@/components/layout/Footer"
 import Header from "@/components/layout/Header"
 import StartupOverlay from "@/components/animations/StartupOverlay.tsx"
+import { MediaDrawerRoot } from "@/components/media/drawer/MediaDrawerRoot"
+import { useMediaDrawer } from "@/components/media/drawer/hooks/useMediaDrawer.ts"
 
 const HomePage = lazy(() => import("@/pages/home/Home"))
 const MoviesPage = lazy(() => import("@/pages/movies/Movies"))
@@ -16,11 +18,25 @@ const Disclaimer = lazy(() => import("@/pages/disclaimer/Disclaimer"))
 
 export default function App() {
     const { open, setOpen } = useSidebar()
+    const { isVisible } = useMediaDrawer()
 
     return (
-        <BrowserRouter>
+        <>
             <div className="relative min-h-screen w-full bg-background text-foreground">
-                <div id="app-root" className="relative flex min-h-screen flex-col transition-[filter] duration-500 ease-out">
+                <MediaDrawerRoot />
+                {/* Sidebar */}
+                <SideBar />
+                {/* Sidebar overlay */}
+                <div
+                    onClick={() => setOpen(false)}
+                    className={`fixed inset-0 z-20 transition-all duration-300 ease-out ${open ? "opacity-100 backdrop-blur-sm" : "backdrop-blur-0 pointer-events-none opacity-0"}`}
+                />
+                <Header />
+
+                <div
+                    id="app-root"
+                    className={`relative flex min-h-screen origin-center flex-col transition-all duration-500 ease-out ${isVisible ? "translate-x-3 scale-[0.99] opacity-90" : "translate-x-0 scale-100 opacity-100"}`}
+                >
                     <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
                         <div className="absolute top-0 left-0 h-full w-full animate-pulse animation-duration-[10s]">
                             <div className="absolute -top-48 -left-48 h-[40vw] max-h-150 min-h-75 w-[40vw] max-w-150 min-w-75 rounded-full bg-primary/60 blur-[128px]" />
@@ -28,18 +44,6 @@ export default function App() {
                             <div className="absolute -top-16 -left-16 h-[20vw] max-h-50 min-h-25 w-[20vw] max-w-50 min-w-25 rounded-full bg-primary/10 blur-3xl" />
                         </div>
                     </div>
-
-                    {/* Sidebar */}
-                    <SideBar />
-
-                    {/* Sidebar overlay */}
-                    <div
-                        onClick={() => setOpen(false)}
-                        className={`fixed inset-0 z-20 transition-all duration-300 ease-out ${open ? "opacity-100 backdrop-blur-sm" : "backdrop-blur-0 pointer-events-none opacity-0"}`}
-                    />
-
-                    <Header />
-
                     {/* MAIN CONTENT */}
                     <main className="mx-auto w-full flex-1 space-y-6">
                         <Suspense
@@ -59,7 +63,6 @@ export default function App() {
                             </Routes>
                         </Suspense>
                     </main>
-
                     <Footer />
                 </div>
 
@@ -67,6 +70,6 @@ export default function App() {
             </div>
 
             <Toaster />
-        </BrowserRouter>
+        </>
     )
 }

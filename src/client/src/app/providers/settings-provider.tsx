@@ -15,6 +15,7 @@ const DEFAULT_TMDB_OPTIONS: TMDBOptions = {
             backdrops: "original",
             logos: "original",
         },
+        fallback_url: "/favicon.svg",
     },
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone as Timezone,
     cache: true,

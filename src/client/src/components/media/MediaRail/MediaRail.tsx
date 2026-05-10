@@ -1,8 +1,7 @@
 import * as React from "react"
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
-import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
-import { toast } from "sonner"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel.tsx"
+import { Skeleton } from "@/components/ui/skeleton.tsx"
+import { cn } from "@/lib/utils.ts"
 
 export interface MediaRailProps<T> {
     title?: React.ReactNode | string
@@ -64,6 +63,7 @@ export function MediaRail<T>({ title, fetcher, getKey, renderItem, className, it
                 opts={{
                     align: "start",
                     loop: false,
+                    dragFree: true,
                 }}
                 className="w-full"
             >
@@ -75,11 +75,7 @@ export function MediaRail<T>({ title, fetcher, getKey, renderItem, className, it
                               </CarouselItem>
                           ))
                         : items.map((item) => (
-                              <CarouselItem
-                                  key={getKey(item)}
-                                  className={cn("basis-1/2 pl-2 sm:basis-1/3 md:basis-1/4 md:pl-4 lg:basis-1/5 xl:basis-1/7", itemClassName)}
-                                  onClick={() => toast.info("Selected: " + getKey(item) + " which is a " + typeof item)}
-                              >
+                              <CarouselItem key={getKey(item)} className={cn("basis-1/2 pl-2 sm:basis-1/3 md:basis-1/4 md:pl-4 lg:basis-1/5 xl:basis-1/7", itemClassName)}>
                                   <div>{renderItem(item)}</div>
                               </CarouselItem>
                           ))}

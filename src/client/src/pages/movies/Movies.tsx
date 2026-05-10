@@ -1,10 +1,10 @@
 import { useTmdb } from "@/hooks/use-tmdb"
 import { HeroCarousel } from "@/components/media/HeroCarousel/HeroCarousel"
-import { MovieRail } from "@/components/media/TypedRails.tsx"
+import { MovieRail } from "@/components/media/MediaRail/TypedRails.tsx"
 import { useEffect, useState } from "react"
 import type { Genre, TrendingParams } from "@lorenzopant/tmdb"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectGroup, SelectItem, SelectValue, SelectTrigger } from "@/components/ui/select.tsx"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select.tsx"
 
 export default function Movies() {
     const tmdb = useTmdb()

@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react"
-import { TMDB, type CountryISO3166_1 } from "@lorenzopant/tmdb"
+import { type CountryISO3166_1, TMDB } from "@lorenzopant/tmdb"
 import countries from "i18n-iso-countries"
 import enLocale from "i18n-iso-countries/langs/en.json"
 

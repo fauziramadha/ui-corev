@@ -1,5 +1,5 @@
-import { MediaRail, type MediaRailProps } from "./MediaRail"
-import { MediaCard } from "./MediaCard"
+import { MediaRail, type MediaRailProps } from "./MediaRail.tsx"
+import { MediaCard } from "./MediaCard.tsx"
 import type { MovieResultItem, TVSeriesResultItem } from "@lorenzopant/tmdb"
 
 type BaseMediaRailProps<T> = Omit<MediaRailProps<T>, "renderItem" | "getKey">

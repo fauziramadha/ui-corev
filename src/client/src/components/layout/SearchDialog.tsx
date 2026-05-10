@@ -4,20 +4,21 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useTmdb } from "@/hooks/use-tmdb"
 import { useDebouncedValue } from "@/hooks/use-debounce"
 import type { MultiSearchResultItem } from "@lorenzopant/tmdb"
-import { useNavigate, useSearchParams } from "react-router-dom"
-import { LucideClapperboard, LucideFilter, LucidePlay, LucideTv, Sparkles } from "lucide-react"
+import { useSearchParams } from "react-router-dom"
+import { LucideClapperboard, LucideFilter, LucidePlay, LucideTv, Star } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { useAppSettings } from "@/hooks/use-appsettings.ts"
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group.tsx"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu.tsx"
+import { useMediaDrawer } from "@/components/media/drawer/hooks/useMediaDrawer.ts"
 
 type MediaFilter = "all" | "movie" | "tv"
 
 export function SearchDialog() {
     const tmdb = useTmdb()
     const { showSearch, setShowSearch } = useAppSettings()
-    const navigate = useNavigate()
     const { t } = useTranslation()
+    const { open } = useMediaDrawer()
 
     const [query, setQuery] = useState("")
     const debouncedQuery = useDebouncedValue(query, 400)
@@ -34,6 +35,7 @@ export function SearchDialog() {
         const f = searchParams.get("type") as MediaFilter | null
 
         if (q) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setQuery(q)
             setShowSearch(true)
         }
@@ -87,6 +89,7 @@ export function SearchDialog() {
     // debounced search
     useEffect(() => {
         if (!debouncedQuery) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setResults([])
             return
         }
@@ -121,15 +124,10 @@ export function SearchDialog() {
     }, [debouncedQuery, tmdb])
 
     const handleSelect = (item: MultiSearchResultItem) => {
-        setShowSearch(false)
-        setQuery("")
-        setSearchParams({}, { replace: true })
-
-        if (item.media_type === "movie") {
-            navigate(`/movie/${item.id}`)
-        } else if (item.media_type === "tv") {
-            navigate(`/show/${item.id}`)
-        }
+        open({
+            type: item.media_type === "movie" ? "movie" : "tv",
+            id: item.id,
+        })
     }
 
     // filtering
@@ -175,7 +173,7 @@ export function SearchDialog() {
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         {rating !== null && (
                             <span className="flex items-center gap-1">
-                                <Sparkles width={4} height={4} className="h-4" />
+                                <Star width={4} height={4} className="h-4" />
                                 {rating.toFixed(1)}
                             </span>
                         )}

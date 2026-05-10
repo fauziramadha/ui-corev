@@ -1,15 +1,19 @@
 import { useMemo, useState } from "react"
 import type { TMDB } from "@lorenzopant/tmdb"
-import { ArrowRight, PlayCircle, Sparkles } from "lucide-react"
+import { ArrowRight, PlayCircle, Star } from "lucide-react"
 import { Carousel, type CarouselApi, CarouselContent, CarouselItem } from "@/components/ui/carousel"
 import { useHeroSlides } from "./use-heroslides"
 import type { HeroFetcherResult } from "./types"
 import { useHeroAutoplay } from "./use-hero-autoplay"
 import { Button } from "@/components/ui/button.tsx"
 import "@/styles/animation.css"
+import { useMediaDrawer } from "@/components/media/drawer/hooks/useMediaDrawer"
+import { useIsMobile } from "@/hooks/use-mobile.ts"
 
 export function HeroCarousel({ tmdb, fetcher }: { tmdb: TMDB; fetcher: HeroFetcherResult }) {
+    const { open } = useMediaDrawer()
     const { slides, loading } = useHeroSlides(tmdb, fetcher)
+    const isMobile = useIsMobile()
 
     const [heroApi, setHeroApi] = useState<CarouselApi>()
     const [activeSlide, setActiveSlide] = useState(0)
@@ -27,8 +31,8 @@ export function HeroCarousel({ tmdb, fetcher }: { tmdb: TMDB; fetcher: HeroFetch
 
     const heroEmptyState = useMemo(
         () => (
-            <div className="flex min-h-100 flex-col items-center justify-center gap-4 px-6 text-center">
-                <Sparkles className="size-8 text-primary" />
+            <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-6 text-center">
+                <Star className="size-8 text-primary" />
                 <h1 className="text-2xl font-semibold">Loading content...</h1>
             </div>
         ),
@@ -42,38 +46,44 @@ export function HeroCarousel({ tmdb, fetcher }: { tmdb: TMDB; fetcher: HeroFetch
             <CarouselContent className="ml-0 h-full">
                 {slides.map((slide) => (
                     <CarouselItem key={`${slide.title}-${slide.year}`} className="pl-0">
-                        <section className="relative h-screen w-full overflow-hidden">
+                        <section className="relative h-[80vh] w-full overflow-hidden md:h-screen">
                             <div className="absolute inset-0">
                                 <img src={slide.image} alt={slide.title} className="h-full w-full object-cover object-center" />
                             </div>
-
                             <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(0,0,0,0.92)_10%,rgba(0,0,0,0.45)_45%,rgba(0,0,0,0.82)_100%)]" />
-
                             <div className="relative z-10 flex h-full items-end">
                                 <div className="mx-auto w-full max-w-7xl px-6 pb-18 sm:px-8 lg:px-12 lg:pb-23">
                                     <div className="max-w-2xl space-y-5">
-                                        <img className="max-h-34 max-w-140" src={slide.logo} alt={slide.title} />
-
+                                        <img className="max-h-34 max-w-[50vw] sm:max-w-140" src={slide.logo} alt={slide.title} />
                                         <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground sm:text-base">
                                             <span className="inline-flex items-center gap-1.5 font-semibold text-primary">
-                                                <Sparkles className="size-3.5" />
+                                                <Star className="size-3.5" />
                                                 {slide.rating}
                                             </span>
                                             <span>{new Date(slide.year).toLocaleDateString()}</span>
                                             <span>{slide.runtime}</span>
                                         </div>
 
-                                        <p className="max-w-xl leading-relaxed text-muted-foreground">
-                                            {slide.description.length > 235 ? `${slide.description.slice(0, 235).split(" ").slice(0, -1).join(" ")}...` : slide.description}
+                                        <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                                            {slide.description.length > (isMobile ? 100 : 235)
+                                                ? `${slide.description
+                                                      .slice(0, isMobile ? 100 : 235)
+                                                      .split(" ")
+                                                      .slice(0, -1)
+                                                      .join(" ")}...`
+                                                : slide.description}
                                         </p>
-
                                         <div className="flex flex-wrap items-center gap-3 pt-4">
                                             <Button className="rounded-full px-7">
                                                 <PlayCircle className="size-4" />
                                                 Play
                                             </Button>
 
-                                            <Button variant="outline" className="rounded-full border-border bg-background/30 px-7 text-foreground backdrop-blur-md">
+                                            <Button
+                                                variant="outline"
+                                                className="rounded-full border-border bg-background/30 px-7 text-foreground backdrop-blur-md"
+                                                onClick={() => open({ type: slide.type, id: slide.id })}
+                                            >
                                                 <ArrowRight className="size-4" />
                                                 Learn more
                                             </Button>

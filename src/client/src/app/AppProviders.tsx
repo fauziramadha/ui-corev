@@ -5,9 +5,11 @@ import { TMDBProvider } from "@/app/providers/tmdb-provider"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { ThemeProvider } from "@/app/providers/theme-provider"
 import { HistoryProvider } from "@/app/providers/history-provider"
+import { MediaDrawerProvider } from "@/components/media/drawer/providers/MediaDrawerProvider"
 import "@/app/i18n/i18n"
 import "lenis/dist/lenis.css"
 import Lenis from "lenis"
+import { BrowserRouter } from "react-router-dom"
 
 export default function AppProviders({ children }: { children: ReactNode }) {
     new Lenis({
@@ -21,7 +23,11 @@ export default function AppProviders({ children }: { children: ReactNode }) {
                 <TMDBProvider>
                     <OmssProvider>
                         <HistoryProvider>
-                            <SidebarProvider defaultOpen={false}>{children}</SidebarProvider>
+                            <SidebarProvider defaultOpen={false}>
+                                <BrowserRouter>
+                                    <MediaDrawerProvider>{children}</MediaDrawerProvider>
+                                </BrowserRouter>
+                            </SidebarProvider>
                         </HistoryProvider>
                     </OmssProvider>
                 </TMDBProvider>
