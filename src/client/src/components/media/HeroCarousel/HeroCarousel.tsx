@@ -9,11 +9,13 @@ import { Button } from "@/components/ui/button.tsx"
 import "@/styles/animation.css"
 import { useMediaDrawer } from "@/components/media/drawer/hooks/useMediaDrawer"
 import { useIsMobile } from "@/hooks/use-mobile.ts"
+import { useNavigate } from "react-router-dom"
 
 export function HeroCarousel({ tmdb, fetcher }: { tmdb: TMDB; fetcher: HeroFetcherResult }) {
     const { open } = useMediaDrawer()
     const { slides, loading } = useHeroSlides(tmdb, fetcher)
     const isMobile = useIsMobile()
+    const navigate = useNavigate()
 
     const [heroApi, setHeroApi] = useState<CarouselApi>()
     const [activeSlide, setActiveSlide] = useState(0)
@@ -74,7 +76,13 @@ export function HeroCarousel({ tmdb, fetcher }: { tmdb: TMDB; fetcher: HeroFetch
                                                 : slide.description}
                                         </p>
                                         <div className="flex flex-wrap items-center gap-3 pt-4">
-                                            <Button className="rounded-full px-7">
+                                            <Button className="rounded-full px-7" onClick={() => {
+                                                if (slide.type === "movie") {
+                                                    navigate("/watch/movie/" + slide.id)
+                                                } else if (slide.type === "tv") {
+                                                    navigate("/watch/tv/" + slide.id + "?s=1&e=1")
+                                                }
+                                            }}>
                                                 <PlayCircle className="size-4" />
                                                 Play
                                             </Button>

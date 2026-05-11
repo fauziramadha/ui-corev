@@ -41,8 +41,8 @@ export function MediaDrawer({ payload, isOpen, onClose, className }: MediaDrawer
 
     return (
         <Drawer open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DrawerContent className={cn("lenis-stopped lenis-disabled mx-auto mt-0 h-[98vh] max-w-6xl overflow-hidden bg-black pt-0 outline-none", className)} data-lenis-prevent="true">
-                <DrawerHeader className={"sr-only"}>
+            <DrawerContent className={cn("lenis-stopped lenis-disabled mx-auto mt-0 h-[98vh] max-w-6xl bg-black pt-0 outline-none", className)} data-lenis-prevent="true">
+                <DrawerHeader className="sr-only">
                     <DrawerTitle>Media Drawer</DrawerTitle>
                     <DrawerDescription>Content below</DrawerDescription>
                 </DrawerHeader>
@@ -53,20 +53,20 @@ export function MediaDrawer({ payload, isOpen, onClose, className }: MediaDrawer
                     <div className="flex h-full items-center justify-center text-sm text-muted-foreground">Failed to load media details.</div>
                 ) : (
                     <div className="relative h-full overflow-y-auto">
-                        {/* HERO */}
-                        <div className="relative aspect-video w-full overflow-hidden md:aspect-video">
+                        {/* STICKY HERO */}
+                        <div className="sticky top-0 h-screen w-full">
                             {data.backdropUrl ? (
-                                <img src={data.backdropUrl} alt={`${data.title} backdrop`} draggable={false} className="absolute inset-0 h-full w-full rounded-t-2xl object-cover object-top" />
+                                <img src={data.backdropUrl} alt={`${data.title} backdrop`} draggable={false} className="h-full w-full rounded-t-2xl object-cover object-top" />
                             ) : (
-                                <div className="absolute inset-0 flex items-center justify-center bg-muted text-sm text-muted-foreground">No backdrop available</div>
+                                <div className="flex h-full items-center justify-center bg-muted text-sm text-muted-foreground">No backdrop available</div>
                             )}
 
-                            {/* OVERLAYS */}
-                            <div className="absolute inset-0 bg-linear-to-t from-black via-black/50 to-transparent" />
+                            {/* OVERLAY */}
+                            <div className="absolute inset-0 bg-linear-to-t from-black via-black/60 to-transparent" />
                         </div>
 
                         {/* CONTENT */}
-                        <div className="relative z-20 -mt-16 px-4 pb-10 md:mt-[-55vh] md:px-8">
+                        <div className="relative z-20 -mt-[45vh] px-4 pb-10 md:px-8">
                             {/* LOGO / TITLE */}
                             <div className="mb-4 max-w-[70%] md:max-w-[40%]">
                                 {data.logoUrl ? (
@@ -140,13 +140,15 @@ export function MediaDrawer({ payload, isOpen, onClose, className }: MediaDrawer
 
 function MediaDrawerSkeleton() {
     return (
-        <div className="relative h-full overflow-hidden bg-black">
-            <div className="relative aspect-video w-full overflow-hidden md:aspect-video">
+        <div className="relative h-full overflow-y-auto bg-black">
+            {/* STICKY HERO */}
+            <div className="sticky top-0 h-screen w-full">
                 <div className="absolute inset-0 animate-pulse bg-muted" />
                 <div className="absolute inset-0 bg-linear-to-t from-black via-black/40 to-transparent" />
             </div>
 
-            <div className="relative -mt-16 px-4 md:mt-[-18vh] md:px-8">
+            {/* CONTENT */}
+            <div className="relative z-20 -mt-[45vh] px-4 pb-10 md:px-8">
                 <div className="mb-5 h-12 w-[40%] animate-pulse rounded-md bg-muted" />
 
                 <div className="mb-5 flex flex-wrap gap-2">

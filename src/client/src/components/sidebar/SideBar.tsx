@@ -49,7 +49,7 @@ export default function SideBar() {
                 <div onClick={() => clickHandler("/")} className="flex cursor-pointer items-center gap-3 px-2 py-2">
                     <img src="/favicon.svg" alt="Logo" className="h-10" />
 
-                    <h1 className="text-xl font-bold text-primary">{t("projectName")}</h1>
+                    <h1 className="text-2xl font-bold">{t("projectName")}</h1>
 
                     <SidebarTrigger />
                 </div>

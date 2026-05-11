@@ -6,3 +6,14 @@ export const maskKey = (key: string, hidden: number = 5) => {
     const masked = "*".repeat(Math.max(0, key.length - hidden))
     return visible + masked
 }
+
+export function normalizeQuality(q: string) {
+    q = q.trim().toLowerCase()
+
+    q = q.replace(/p+$/, "p")
+    q = q.replace(/k+p+$/, "k")
+
+    if (/^\d+$/.test(q)) return `${q}p`
+
+    return toTitle(q)
+}

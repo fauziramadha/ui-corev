@@ -18,7 +18,7 @@ export const MediaCast: React.FC<MediaCastProps> = ({ cast }) => {
                     {cast.map((person) => (
                         <CarouselItem key={person.id} className="basis-1/4 pl-3 md:basis-1/6 lg:basis-1/8">
                             <div className="space-y-2">
-                                <div className="aspect-square overflow-hidden rounded-md bg-muted">
+                                <div className="overflow-hidden rounded-md bg-muted">
                                     {person.profileUrl ? (
                                         <img src={person.profileUrl} alt={person.name} className="h-full w-full object-cover" />
                                     ) : (

@@ -4,6 +4,8 @@ import { Slider } from "@/components/ui/slider"
 import { formatTime } from "./utils/time"
 import { SubtitleSelector } from "./SubtitleSelector"
 import { AudioTrackSelector } from "./AudioTrackSelector"
+import type { WheelEventHandler } from "react"
+import { SourceSelector } from "@/components/player/SourceSelector.tsx"
 
 interface PlayerControlsProps {
     isPlaying: boolean
@@ -17,16 +19,37 @@ interface PlayerControlsProps {
     onToggleMute: () => void
     onVolumeChange: (volume: number[]) => void
     onToggleFullscreen: () => void
+    onDivClick: () => void
+    onDoubleClick: () => void
+    onWheel: WheelEventHandler<HTMLDivElement>
     show: boolean
 }
 
-export function PlayerControls({ isPlaying, currentTime, duration, volume, isMuted, isFullscreen, onTogglePlay, onSeek, onToggleMute, onVolumeChange, onToggleFullscreen, show }: PlayerControlsProps) {
+export function PlayerControls({
+    isPlaying,
+    currentTime,
+    duration,
+    volume,
+    isMuted,
+    isFullscreen,
+    onTogglePlay,
+    onSeek,
+    onToggleMute,
+    onVolumeChange,
+    onToggleFullscreen,
+    show,
+    onDoubleClick,
+    onDivClick,
+    onWheel,
+}: PlayerControlsProps) {
     return (
         <div
             className={`absolute inset-0 flex flex-col justify-end bg-linear-to-t from-black/80 via-transparent to-black/40 px-4 pt-1 pb-2 transition-opacity duration-300 ${show ? "opacity-100" : "pointer-events-none opacity-0"}`}
+            onClick={onDivClick}
+            onDoubleClick={onDoubleClick}
+            onWheel={onWheel}
         >
             <div className="mx-auto w-full max-w-6xl space-y-2">
-                {" "}
                 {/* Progress Bar */}
                 <div className="group relative py-2">
                     <Slider value={[currentTime]} max={duration} step={1} onValueChange={onSeek} className="cursor-pointer" />
@@ -58,8 +81,8 @@ export function PlayerControls({ isPlaying, currentTime, duration, volume, isMut
                             {formatTime(currentTime)} / {formatTime(duration)}
                         </div>
                     </div>
-
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()} onWheel={(e) => e.stopPropagation()}>
+                        <SourceSelector />
                         <SubtitleSelector />
                         <AudioTrackSelector />
 
