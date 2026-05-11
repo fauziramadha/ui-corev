@@ -2,10 +2,12 @@ import { Link } from "react-router-dom"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
 import { Bug, Film, Github, Info, Tv } from "lucide-react"
-import { t } from "i18next"
 import { Button } from "@/components/ui/button"
+import { useTranslation } from "react-i18next"
 
 export default function Footer() {
+    const { t } = useTranslation(["footer", "common"])
+
     return (
         <footer id="footer" className="z-1 mt-8 border-t border-border bg-background py-4 transition-all duration-300 ease-in-out md:py-12">
             <div className="px-4 md:px-6">
@@ -14,9 +16,9 @@ export default function Footer() {
                     <div className="col-span-2 md:col-span-1">
                         <div className="mb-3 flex items-center gap-2 md:mb-4">
                             <img src="/favicon.svg" alt="Logo" width={40} height={40} />
-                            <span className="text-lg font-bold text-primary md:text-xl">{t("projectName")}</span>
+                            <span className="text-lg font-bold text-primary md:text-xl">{t("common:projectName")}</span>
                         </div>
-                        <p className="text-xs text-muted-foreground md:text-sm">{t("footer.tagline")}</p>
+                        <p className="text-xs text-muted-foreground md:text-sm">{t("tagline")}</p>
                     </div>
 
                     {/* Pages */}
@@ -25,17 +27,17 @@ export default function Footer() {
                         <ul className="space-y-1 md:space-y-2">
                             <li>
                                 <Link to="/movies" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground md:text-sm" target="_self" rel="noopener">
-                                    <Film className="h-4 w-4" /> {t("common.movie.plural")}
+                                    <Film className="h-4 w-4" /> {t("common:movie.plural")}
                                 </Link>
                             </li>
                             <li>
                                 <Link to="/shows" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground md:text-sm" target="_self" rel="noopener">
-                                    <Tv className="h-4 w-4" /> {t("common.tvShow.plural")}
+                                    <Tv className="h-4 w-4" /> {t("common:tvShow.plural")}
                                 </Link>
                             </li>
                             <li>
                                 <Link to="/disclaimer" className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground md:text-sm" target="_self" rel="noopener">
-                                    <Info className="h-4 w-4" /> {t("common.disclaimer.label")}
+                                    <Info className="h-4 w-4" /> {t("common:disclaimer.label")}
                                 </Link>
                             </li>
                         </ul>
@@ -47,33 +49,33 @@ export default function Footer() {
                         <ul className="space-y-1 md:space-y-2">
                             <li>
                                 <Link
-                                    to={t("common.opensource.git-url")}
+                                    to={t("common:opensource.git-url")}
                                     className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground md:text-sm"
                                     target="_blank"
                                     rel="noopener"
                                 >
-                                    <Github className="h-4 w-4" /> {t("footer.links.git")}
+                                    <Github className="h-4 w-4" /> {t("links.git")}
                                 </Link>
                             </li>
                             <li>
                                 <Link
-                                    to={t("common.opensource.git-url") + "/blob/main/README.md"}
+                                    to={t("common:opensource.git-url") + "/blob/main/README.md"}
                                     className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground md:text-sm"
                                     target="_blank"
                                     rel="noopener"
                                 >
-                                    <Info className="h-4 w-4" /> {t("footer.links.about")}
+                                    <Info className="h-4 w-4" /> {t("links.about")}
                                 </Link>
                             </li>
                             <li>
                                 <Link
-                                    to={t("common.opensource.git-url") + "/issues"}
+                                    to={t("common:opensource.git-url") + "/issues"}
                                     className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground md:text-sm"
                                     target="_blank"
                                     rel="noopener"
                                 >
                                     <Bug className="h-4 w-4" />
-                                    {t("footer.links.report-issue")}
+                                    {t("links.report-issue")}
                                 </Link>
                             </li>
                         </ul>
@@ -85,7 +87,7 @@ export default function Footer() {
                 <div className="flex flex-col items-center justify-between md:flex-row">
                     <p className="text-center text-xs text-muted-foreground md:text-left md:text-sm">
                         © {new Date().getFullYear()} {t("projectName")} by{" "}
-                        <Link to={t("common.opensource.git-url")} className="underline" target="_blank" rel="noopener">
+                        <Link to={t("common:opensource.git-url")} className="underline" target="_blank" rel="noopener">
                             {t("authors")}
                         </Link>
                         . All rights reserved.
@@ -95,12 +97,12 @@ export default function Footer() {
                         <Button
                             onClick={(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
                                 e.preventDefault()
-                                toast.success(t("footer.cookie-policy.value"))
+                                toast.success(t("cookie-policy.value"))
                             }}
                             variant={"outline"}
                         >
                             <Info className="h-4 w-4" />
-                            {t("footer.cookie-policy.label")}
+                            {t("cookie-policy.label")}
                         </Button>
                     </div>
                 </div>

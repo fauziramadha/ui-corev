@@ -26,7 +26,7 @@ export default function AppLayout() {
             <div id="app-root" className={`relative flex min-h-screen flex-col transition-all duration-500 ease-out ${isVisible ? "translate-x-3 scale-[0.99] opacity-90" : "opacity-100"}`}>
                 {/* background effects */}
                 <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-                    <div className="absolute top-0 left-0 h-full w-full animate-pulse">
+                    <div className="absolute top-0 left-0 h-full w-full animate-pulse animation-duration-[10s]">
                         <div className="absolute -top-48 -left-48 h-[40vw] w-[40vw] rounded-full bg-primary/60 blur-[128px]" />
                         <div className="absolute -top-32 -left-32 h-[30vw] w-[30vw] rounded-full bg-primary/20 blur-[96px]" />
                         <div className="absolute -top-16 -left-16 h-[20vw] w-[20vw] rounded-full bg-primary/10 blur-3xl" />

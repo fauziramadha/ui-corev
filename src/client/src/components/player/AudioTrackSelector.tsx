@@ -1,17 +1,19 @@
 import { useAudioTracks } from "./hooks/useAudioTracks"
 import { Check, Volume2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
 
 export function AudioTrackSelector() {
     const { audioTracks, selectedAudioTrack, selectAudioTrack } = useAudioTracks()
+    const { t } = useTranslation("player")
 
     if (audioTracks.length <= 1) return null
 
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20">
+                <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" title={t("controls.audio")}>
                     <Volume2 className="h-5 w-5" />
                 </Button>
             </DropdownMenuTrigger>

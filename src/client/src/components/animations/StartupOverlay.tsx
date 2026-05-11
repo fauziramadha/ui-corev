@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react"
-import { t } from "i18next"
 import { H2, H3, H4 } from "@/components/ui/typography.tsx"
 import "@/styles/animation.css"
+import { useTranslation } from "react-i18next"
 
 type StartupPhase = "loading" | "brand" | "closing" | "done"
 const startupOverlayKey = "app.startup-overlay-done"
 
 export default function StartupOverlay() {
+    const { t } = useTranslation("common")
+
     const [phase, setPhase] = useState<StartupPhase>(() => {
         return window.sessionStorage.getItem(startupOverlayKey) === "true" ? "done" : "loading"
     })

@@ -4,7 +4,7 @@ import { Link } from "react-router-dom"
 import { useTranslation } from "react-i18next"
 
 export default function NotFound() {
-    const { t } = useTranslation()
+    const { t } = useTranslation("common")
 
     return (
         <div className="flex min-h-[60vh] w-full flex-1 flex-col items-center justify-center gap-2 p-4 text-center">

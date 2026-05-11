@@ -1,4 +1,5 @@
 import { useEffect } from "react"
+import { useTranslation } from "react-i18next"
 import type { MediaType } from "../types/media.types"
 import { useMediaDetails } from "./useMediaDetails"
 import { useMediaSources } from "./useMediaSources"
@@ -8,6 +9,7 @@ import { useMediaWatchContext } from "../providers/MediaWatchProvider"
 
 export function useMediaWatch(id: string, type: MediaType, season?: number, episode?: number) {
     const { setMedia, setError, setIsLoading } = useMediaWatchContext()
+    const { t } = useTranslation("player")
     const { details, isLoading: detailsLoading, error: detailsError } = useMediaDetails(id, type, season, episode)
     const { sources, isLoading: sourcesLoading, error: sourcesError } = useMediaSources(id, type, season, episode)
 
@@ -31,7 +33,7 @@ export function useMediaWatch(id: string, type: MediaType, season?: number, epis
                 setMedia(unified)
                 setIsLoading(false)
             } else {
-                setError("Failed to resolve media data")
+                setError(t("states.error"))
             }
         }
     }, [details, sources, detailsLoading, sourcesLoading, detailsError, sourcesError, type, setMedia, setError, setIsLoading])

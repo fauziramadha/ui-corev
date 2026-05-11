@@ -17,7 +17,7 @@ type MediaFilter = "all" | "movie" | "tv"
 export function SearchDialog() {
     const tmdb = useTmdb()
     const { showSearch, setShowSearch } = useAppSettings()
-    const { t } = useTranslation()
+    const { t } = useTranslation(["searchdialog", "common"])
     const { open } = useMediaDrawer()
 
     const [query, setQuery] = useState("")
@@ -145,7 +145,7 @@ export function SearchDialog() {
 
         if (item.media_type === "movie") {
             title = item.title
-            subtitle = item.release_date || t("searchdialog.fallbackDate")
+            subtitle = item.release_date || t("fallbackDate")
             image = item.poster_path
             rating = item.vote_average
             icon = <LucidePlay className="h-4 w-4" />
@@ -153,7 +153,7 @@ export function SearchDialog() {
 
         if (item.media_type === "tv") {
             title = item.name
-            subtitle = item.first_air_date || t("searchdialog.fallbackDate")
+            subtitle = item.first_air_date || t("fallbackDate")
             image = item.poster_path
             rating = item.vote_average
             icon = <LucideTv className="h-4 w-4" />
@@ -200,7 +200,7 @@ export function SearchDialog() {
             <Command>
                 <div className="px-2 pt-2">
                     <InputGroup>
-                        <InputGroupInput placeholder={t("searchdialog.placeholder")} value={query} onChange={(e) => setQuery(e.target.value)} />
+                        <InputGroupInput placeholder={t("placeholder")} value={query} onChange={(e) => setQuery(e.target.value)} />
 
                         <InputGroupAddon align="inline-end">
                             <DropdownMenu>
@@ -213,17 +213,17 @@ export function SearchDialog() {
                                 <DropdownMenuContent align="end">
                                     <DropdownMenuItem onClick={() => setFilter("all")}>
                                         <LucidePlay className="mr-2 h-4 w-4" />
-                                        {t("common.all")}
+                                        {t("common:all")}
                                     </DropdownMenuItem>
 
                                     <DropdownMenuItem onClick={() => setFilter("movie")} className={filter === "movie" ? "text-primary" : ""}>
                                         <LucideClapperboard className="mr-2 h-4 w-4" />
-                                        {t("common.movie.plural")}
+                                        {t("common:movie.plural")}
                                     </DropdownMenuItem>
 
                                     <DropdownMenuItem onClick={() => setFilter("tv")} className={filter === "tv" ? "text-primary" : ""}>
                                         <LucideTv className="mr-2 h-4 w-4" />
-                                        {t("common.tvShow.plural")}
+                                        {t("common:tvShow.plural")}
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
@@ -240,16 +240,16 @@ export function SearchDialog() {
                         </div>
                     )}
 
-                    {!loading && query.length === 0 && <CommandEmpty>{t("searchdialog.emptyIdle")}</CommandEmpty>}
+                    {!loading && query.length === 0 && <CommandEmpty>{t("emptyIdle")}</CommandEmpty>}
 
                     {!loading && query.length > 0 && results.length === 0 && (
                         <CommandEmpty>
-                            {t("searchdialog.emptyNoResults")} <span className="text-muted-foreground italic">{t("searchdialog.quoteAuthor")}</span>
+                            {t("emptyNoResults")} <span className="text-muted-foreground italic">{t("quoteAuthor")}</span>
                         </CommandEmpty>
                     )}
 
                     {!loading && filteredResults.length > 0 && (
-                        <CommandGroup heading={filter === "movie" ? t("common.movie.plural") : filter === "tv" ? t("common.tvShow.plural") : t("common.results")}>
+                        <CommandGroup heading={filter === "movie" ? t("common:movie.plural") : filter === "tv" ? t("common:tvShow.plural") : t("common:results")}>
                             {filteredResults.map(renderItem)}
                         </CommandGroup>
                     )}

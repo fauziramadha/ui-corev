@@ -30,7 +30,7 @@ import { AlertTriangle, RefreshCcw, Star, Trash2 } from "lucide-react"
 import { useEffect } from "react"
 
 export default function Settings() {
-    const { t } = useTranslation()
+    const { t } = useTranslation(["settings", "common", "header"])
     const navigate = useNavigate()
 
     const [searchParams, setSearchParams] = useSearchParams()
@@ -58,7 +58,7 @@ export default function Settings() {
 
     return (
         <section className="mx-auto mt-25 min-h-[60vh] max-w-3xl space-y-6">
-            <H1>{t("settingsPage.title")}</H1>
+            <H1>{t("title")}</H1>
 
             <Tabs
                 value={currentTab}
@@ -79,26 +79,26 @@ export default function Settings() {
             >
                 {/* Tabs header */}
                 <TabsList variant="line">
-                    <TabsTrigger value="general">{t("settingsPage.general.title")}</TabsTrigger>
-                    <TabsTrigger value="history">{t("settingsPage.tabs.history")}</TabsTrigger>
-                    <TabsTrigger value="playback">{t("settingsPage.tabs.playback")}</TabsTrigger>
-                    <TabsTrigger value="omss">{t("settingsPage.tabs.omss")}</TabsTrigger>
-                    <TabsTrigger value="tmdb">{t("settingsPage.tabs.tmdb")}</TabsTrigger>
+                    <TabsTrigger value="general">{t("general.title")}</TabsTrigger>
+                    <TabsTrigger value="history">{t("tabs.history")}</TabsTrigger>
+                    <TabsTrigger value="playback">{t("tabs.playback")}</TabsTrigger>
+                    <TabsTrigger value="omss">{t("tabs.omss")}</TabsTrigger>
+                    <TabsTrigger value="tmdb">{t("tabs.tmdb")}</TabsTrigger>
                 </TabsList>
 
                 {/* ---------------- GENERAL ---------------- */}
                 <TabsContent value="general">
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t("settingsPage.general.title")}</CardTitle>
-                            <CardDescription>{t("settingsPage.general.description")}</CardDescription>
+                            <CardTitle>{t("general.title")}</CardTitle>
+                            <CardDescription>{t("general.description")}</CardDescription>
                             <CardAction>
                                 <Button asChild>
-                                    <Link to={t("common.opensource.git-url")} target="_blank" rel="noopener noreferrer">
+                                    <Link to={t("common:opensource.git-url")} target="_blank" rel="noopener noreferrer">
                                         <Star />
                                         <span className="ml-1 hidden sm:inline">
-                                            {t("header.githubButton", {
-                                                platform: t("common.opensource.git-platform"),
+                                            {t("header:githubButton", {
+                                                platform: t("common:opensource.git-platform"),
                                             })}
                                         </span>
                                     </Link>
@@ -109,18 +109,18 @@ export default function Settings() {
                         <CardContent className="space-y-6">
                             <div className="mt-3 flex justify-between">
                                 <div>
-                                    <Label>{t("settingsPage.general.language.cardlabel")}</Label>
-                                    <span className="flex pt-1 text-muted-foreground">{t("settingsPage.general.language.info", { gitUrl: t("common.opensource.git-url") })}</span>
+                                    <Label>{t("general.language.cardlabel")}</Label>
+                                    <span className="flex pt-1 text-muted-foreground">{t("general.language.info", { gitUrl: t("common:opensource.git-url") })}</span>
                                 </div>
 
                                 <Select value={locale} onValueChange={(value) => setLocale(value as SupportedLocales)}>
                                     <SelectTrigger className="max-w-min">
-                                        <SelectValue placeholder={t("settingsPage.general.language.placeholder")} />
+                                        <SelectValue placeholder={t("general.language.placeholder")} />
                                     </SelectTrigger>
 
                                     <SelectContent>
                                         <SelectGroup>
-                                            <SelectLabel>{t("settingsPage.general.language.selectlabel")}</SelectLabel>
+                                            <SelectLabel>{t("general.language.selectlabel")}</SelectLabel>
 
                                             {supportedLocales.map((l) => (
                                                 <SelectItem key={l.iso639} value={l.iso639}>
@@ -134,12 +134,12 @@ export default function Settings() {
 
                             <div className="mt-3 flex justify-between">
                                 <div>
-                                    <Label>{t("settingsPage.general.reset.label")}</Label>
-                                    <span className="flex pt-1 text-muted-foreground">{t("settingsPage.general.reset.info")}</span>
+                                    <Label>{t("general.reset.label")}</Label>
+                                    <span className="flex pt-1 text-muted-foreground">{t("general.reset.info")}</span>
                                 </div>
                                 <ConfirmDialog
-                                    title={t("settingsPage.general.reset.title")}
-                                    description={t("settingsPage.general.reset.description")}
+                                    title={t("general.reset.title")}
+                                    description={t("general.reset.description")}
                                     onConfirm={() => {
                                         localStorage.clear()
                                         location.reload()
@@ -148,7 +148,7 @@ export default function Settings() {
                                     trigger={
                                         <Button variant="destructive" className={"max-w-min"}>
                                             <RefreshCcw />
-                                            <span className={"ml-1 hidden sm:inline"}>{t("settingsPage.general.reset.button")}</span>
+                                            <span className={"ml-1 hidden sm:inline"}>{t("general.reset.button")}</span>
                                         </Button>
                                     }
                                 />
@@ -161,18 +161,18 @@ export default function Settings() {
                 <TabsContent value="history">
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t("settingsPage.history.title")}</CardTitle>
-                            <CardDescription>{t("settingsPage.history.description")}</CardDescription>
+                            <CardTitle>{t("history.title")}</CardTitle>
+                            <CardDescription>{t("history.description")}</CardDescription>
 
                             <CardAction>
                                 <ConfirmDialog
-                                    title={t("settingsPage.history.clear.title")}
-                                    description={t("settingsPage.history.clear.description")}
+                                    title={t("history.clear.title")}
+                                    description={t("history.clear.description")}
                                     onConfirm={clear}
                                     trigger={
                                         <Button variant="destructive" className={"max-w-min"} disabled={!history.length}>
                                             <Trash2 />
-                                            <span className={"ml-1 hidden sm:inline"}>{t("settingsPage.history.clear.button")}</span>
+                                            <span className={"ml-1 hidden sm:inline"}>{t("history.clear.button")}</span>
                                         </Button>
                                     }
                                 />
@@ -186,8 +186,8 @@ export default function Settings() {
                                         <EmptyMedia variant="icon">
                                             <Trash2 className="size-5" />
                                         </EmptyMedia>
-                                        <EmptyTitle>{t("settingsPage.history.empty.title")}</EmptyTitle>
-                                        <EmptyDescription>{t("settingsPage.history.empty.description")}</EmptyDescription>
+                                        <EmptyTitle>{t("history.empty.title")}</EmptyTitle>
+                                        <EmptyDescription>{t("history.empty.description")}</EmptyDescription>
                                     </EmptyHeader>
                                 </Empty>
                             ) : (
@@ -202,13 +202,13 @@ export default function Settings() {
                                                 </ItemContent>
 
                                                 <ConfirmDialog
-                                                    title={t("settingsPage.history.item.removeTitle")}
-                                                    description={t("settingsPage.history.item.removeDescription")}
+                                                    title={t("history.item.removeTitle")}
+                                                    description={t("history.item.removeDescription")}
                                                     onConfirm={() => remove(item)}
                                                     trigger={
                                                         <Button variant="secondary" size="sm">
                                                             <Trash2 />
-                                                            {t("settingsPage.history.item.removeButton")}
+                                                            {t("history.item.removeButton")}
                                                         </Button>
                                                     }
                                                 />
@@ -225,15 +225,15 @@ export default function Settings() {
                 <TabsContent value="playback">
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t("settingsPage.playback.title")}</CardTitle>
-                            <CardDescription>{t("settingsPage.playback.description")}</CardDescription>
+                            <CardTitle>{t("playback.title")}</CardTitle>
+                            <CardDescription>{t("playback.description")}</CardDescription>
                         </CardHeader>
 
                         <CardContent>
                             <div className="flex items-center justify-between">
                                 <div className="space-y-1">
-                                    <Label>{t("settingsPage.playback.autoplayNext.label")}</Label>
-                                    <p className="text-sm text-muted-foreground">{t("settingsPage.playback.autoplayNext.description")}</p>
+                                    <Label>{t("playback.autoplayNext.label")}</Label>
+                                    <p className="text-sm text-muted-foreground">{t("playback.autoplayNext.description")}</p>
                                 </div>
 
                                 <Switch checked={autoplayNext} onCheckedChange={setAutoplayNext} />
@@ -246,18 +246,18 @@ export default function Settings() {
                 <TabsContent value="omss">
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t("settingsPage.omss.title", { coreName: t("coreName") })}</CardTitle>
-                            <CardDescription>{t("settingsPage.omss.description")}</CardDescription>
+                            <CardTitle>{t("omss.title", { coreName: t("common:coreName") })}</CardTitle>
+                            <CardDescription>{t("omss.description")}</CardDescription>
                             <CardAction>
-                                {valid ? <Badge>{t("settingsPage.omss.connection.connected")}</Badge> : <Badge variant="destructive">{t("settingsPage.omss.connection.disconnected")}</Badge>}
+                                {valid ? <Badge>{t("omss.connection.connected")}</Badge> : <Badge variant="destructive">{t("omss.connection.disconnected")}</Badge>}
                             </CardAction>
                         </CardHeader>
 
                         <CardContent>
                             <div className="space-y-2">
-                                <Label htmlFor="omss">{t("settingsPage.omss.label", { coreName: t("coreName") })}</Label>
+                                <Label htmlFor="omss">{t("omss.label", { coreName: t("common:coreName") })}</Label>
 
-                                <span className="flex pt-1 text-muted-foreground">{t("settingsPage.omss.info")}</span>
+                                <span className="flex pt-1 text-muted-foreground">{t("omss.info")}</span>
 
                                 <Input id="omss" value={baseUrl} onChange={(e) => setBaseUrl(e.target.value)} placeholder="http://localhost:3000" />
 
@@ -266,11 +266,11 @@ export default function Settings() {
                                         <ItemHeader>
                                             <H4 className="flex items-center gap-2">
                                                 <AlertTriangle />
-                                                {t("settingsPage.omss.note.title")}
+                                                {t("omss.note.title")}
                                             </H4>
                                         </ItemHeader>
                                         <ItemContent>
-                                            <P>{t("settingsPage.omss.note.value")}</P>
+                                            <P>{t("omss.note.value")}</P>
                                         </ItemContent>
                                     </Item>
                                 )}
@@ -283,24 +283,24 @@ export default function Settings() {
                 <TabsContent value="tmdb">
                     <Card>
                         <CardHeader>
-                            <CardTitle>{t("settingsPage.tmdb.title")}</CardTitle>
-                            <CardDescription>{t("settingsPage.tmdb.description")}</CardDescription>
+                            <CardTitle>{t("tmdb.title")}</CardTitle>
+                            <CardDescription>{t("tmdb.description")}</CardDescription>
                         </CardHeader>
 
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label htmlFor="tmdb">{t("settingsPage.tmdb.apiKey")}</Label>
-                                <span className="flex pt-1 text-muted-foreground">{t("settingsPage.tmdb.info")}</span>
+                                <Label htmlFor="tmdb">{t("tmdb.apiKey")}</Label>
+                                <span className="flex pt-1 text-muted-foreground">{t("tmdb.info")}</span>
                                 <Input disabled id="tmdb" value={maskKey(tmdbApiKey, 10)} />
                             </div>
 
                             <div className="mt-3 flex flex-col justify-between md:flex-row">
                                 <div>
-                                    <Label>{t("settingsPage.tmdb.region.cardlabel")}</Label>
+                                    <Label>{t("tmdb.region.cardlabel")}</Label>
 
                                     <span className="flex py-2 pr-0 text-muted-foreground md:pr-4">
-                                        {t("settingsPage.tmdb.region.info", {
-                                            projectName: t("projectName"),
+                                        {t("tmdb.region.info", {
+                                            projectName: t("common:projectName"),
                                         })}
                                     </span>
                                 </div>
@@ -314,12 +314,12 @@ export default function Settings() {
                                     }}
                                 >
                                     <SelectTrigger className="w-full md:w-3/5">
-                                        <SelectValue placeholder={t("settingsPage.tmdb.region.placeholder")} />
+                                        <SelectValue placeholder={t("tmdb.region.placeholder")} />
                                     </SelectTrigger>
 
                                     <SelectContent>
                                         <SelectGroup>
-                                            <SelectLabel>{t("settingsPage.tmdb.region.selectlabel")}</SelectLabel>
+                                            <SelectLabel>{t("tmdb.region.selectlabel")}</SelectLabel>
                                         </SelectGroup>
 
                                         {supportedRegions.map((r) => (

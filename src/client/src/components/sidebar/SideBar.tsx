@@ -24,7 +24,7 @@ import { useMediaDrawer } from "@/components/media/drawer/hooks/useMediaDrawer.t
 
 export default function SideBar() {
     const { setOpen, setOpenMobile } = useSidebar()
-    const { t } = useTranslation()
+    const { t } = useTranslation(["common", "watchhistory"])
     const navigate = useNavigate()
     const location = useLocation()
     const { history } = useHistory()
@@ -58,28 +58,28 @@ export default function SideBar() {
             <SidebarContent>
                 {/* Pages */}
                 <SidebarGroup>
-                    <SidebarGroupLabel>{t("common.pages")}</SidebarGroupLabel>
+                    <SidebarGroupLabel>{t("pages")}</SidebarGroupLabel>
 
                     <SidebarGroupContent>
                         <SidebarMenu>
                             <SidebarMenuItem>
                                 <Button variant={"link"} onClick={() => clickHandler("/")} className={navItemClass(isActive("/"))}>
                                     <LucideHome size={18} />
-                                    <span>{t("common.home")}</span>
+                                    <span>{t("home")}</span>
                                 </Button>
                             </SidebarMenuItem>
 
                             <SidebarMenuItem>
                                 <Button variant={"link"} onClick={() => clickHandler("/movies")} className={navItemClass(isActive("/movies"))}>
                                     <LucideFilm size={18} />
-                                    <span>{t("common.movie.plural")}</span>
+                                    <span>{t("movie.plural")}</span>
                                 </Button>
                             </SidebarMenuItem>
 
                             <SidebarMenuItem>
                                 <Button variant={"link"} onClick={() => clickHandler("/shows")} className={navItemClass(isActive("/shows"))}>
                                     <LucideTv size={18} />
-                                    <span>{t("common.tvShow.plural")}</span>
+                                    <span>{t("tvShow.plural")}</span>
                                 </Button>
                             </SidebarMenuItem>
                         </SidebarMenu>
@@ -88,11 +88,11 @@ export default function SideBar() {
 
                 {/* History */}
                 <SidebarGroup>
-                    <SidebarGroupLabel>{t("watchhistory.title")}</SidebarGroupLabel>
+                    <SidebarGroupLabel>{t("watchhistory:title")}</SidebarGroupLabel>
 
                     <SidebarGroupContent>
                         {history.length === 0 ? (
-                            <p className="px-2 text-sm text-muted-foreground">{t("watchhistory.empty")}</p>
+                            <p className="px-2 text-sm text-muted-foreground">{t("watchhistory:empty")}</p>
                         ) : (
                             <div className="max-h-75 overflow-y-auto pr-1">
                                 <SidebarMenu>
@@ -109,7 +109,7 @@ export default function SideBar() {
                                                 >
                                                     <span className="truncate">{label}</span>
 
-                                                    <Badge variant="secondary">{t(`common.${entry.kind}.singular`)}</Badge>
+                                                    <Badge variant="secondary">{t(`${entry.kind}.singular`)}</Badge>
                                                 </SidebarMenuButton>
                                             </SidebarMenuItem>
                                         )
@@ -127,7 +127,7 @@ export default function SideBar() {
                     <SidebarMenuItem>
                         <Button variant={"link"} onClick={() => clickHandler("/settings")} className={navItemClass(isActive("/settings"))}>
                             <LucideCog size={18} />
-                            <span>{t("common.settings")}</span>
+                            <span>{t("settings")}</span>
                         </Button>
                     </SidebarMenuItem>
                 </SidebarMenu>

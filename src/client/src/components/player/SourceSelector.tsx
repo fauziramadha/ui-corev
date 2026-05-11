@@ -1,6 +1,7 @@
 import { Check, ChevronDown } from "lucide-react"
 
 import { useMemo } from "react"
+import { useTranslation } from "react-i18next"
 
 import { useMediaWatchContext } from "./providers/MediaWatchProvider"
 
@@ -12,6 +13,7 @@ import { normalizeQuality } from "@/lib/strings.utils.ts"
 
 export function SourceSelector() {
     const { state, selectSource } = useMediaWatchContext()
+    const { t } = useTranslation("player")
 
     const sources = useMemo(() => {
         return state.media?.playback.sources.reverse() || []
@@ -38,9 +40,9 @@ export function SourceSelector() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="justify-between">
+                <Button variant="outline" className="justify-between" title={t("controls.source")}>
                     <div className="flex items-center gap-2 overflow-hidden">
-                        <span className="truncate font-medium">{selectedSource?.provider.name || "Select source"}</span>
+                        <span className="truncate font-medium">{selectedSource?.provider.name || t("selectors.selectSource")}</span>
 
                         {selectedSource && (
                             <Badge variant="secondary" className="text-[10px]">
@@ -65,7 +67,7 @@ export function SourceSelector() {
                                 return (
                                     <DropdownMenuItem key={`${source.provider.id}-${idx}`} onClick={() => selectSource(source)} className="flex items-center justify-between gap-3">
                                         <div className="flex min-w-0 items-center gap-2">
-                                            Source {idx + 1}
+                                            {t("selectors.sourceNumber", { number: idx + 1 })}
                                             <Badge variant="outline">{normalizeQuality(source.quality)}</Badge>
                                         </div>
 

@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useState } from "react"
 import Hls from "hls.js"
+import { useTranslation } from "react-i18next"
 import { usePlayerState } from "./hooks/usePlayerState"
 import { PlayerControls } from "./PlayerControls"
 import { LoadingState } from "./LoadingState"
@@ -14,6 +15,7 @@ export function MediaPlayer() {
     const hlsRef = useRef<Hls | null>(null)
 
     const { media, isPlaying, isLoading, currentTime, duration, volume, isMuted, setIsPlaying, setIsLoading, setCurrentTime, setDuration, setVolume, setIsMuted, setError } = usePlayerState()
+    const { t } = useTranslation("player")
 
     const { handleEpisodeEnded } = useEpisodeAutoplay()
     const {subtitles, selectedSubtitle} = useSubtitles()
@@ -170,7 +172,16 @@ export function MediaPlayer() {
         }
     }
 
-    if (!selectedSource) return <LoadingState message="Resolving sources..." />
+    if (!selectedSource) return (
+        <LoadingState
+            message={
+                <div className={"flex flex-col items-center justify-center"}>
+                    <span className={"text-lg"}>{t("states.resolving")}</span>
+                    <span>{t("states.resolvingSub")}</span>
+                </div>
+            }
+        />
+    )
 
     return (
         <div ref={containerRef} className="group relative h-screen w-full overflow-hidden" onMouseMove={handleMouseMove} onMouseLeave={() => setShowControls(false)}>
@@ -185,7 +196,7 @@ export function MediaPlayer() {
                 onClick={togglePlay}
                 preload="auto"
                 crossOrigin="anonymous"
-                poster={media?.backdropUrl}
+                poster={media?.backdropUrl.replace("w300", "original")}
                 playsInline
             >
                 {subtitles.map((sub, idx) => (
@@ -193,9 +204,9 @@ export function MediaPlayer() {
                 ))}
             </video>
 
-            {isLoading && (
+            {isLoading && !isPlaying && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
-                    <LoadingState message="Buffering..." />
+                    <LoadingState message={t("states.buffering")} />
                 </div>
             )}
 

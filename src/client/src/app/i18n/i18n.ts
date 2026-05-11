@@ -15,6 +15,8 @@ i18n.use(HttpBackend)
         backend: {
             loadPath: "/locales/{{lng}}/{{ns}}.json",
         },
+        ns: ["common", "player", "settings", "footer", "header", "searchdialog", "watchhistory"],
+        defaultNS: "common",
     })
 
 export default i18n

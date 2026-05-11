@@ -30,6 +30,13 @@
     ],
     "shortcuts": [
         {
+            "name": "Home",
+            "short_name": "Home",
+            "description": "Welcome to CinePro!",
+            "url": "/",
+            "icons": [{ "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+        },
+        {
             "name": "Browse Movies",
             "short_name": "Movies",
             "description": "Browse the latest movies",

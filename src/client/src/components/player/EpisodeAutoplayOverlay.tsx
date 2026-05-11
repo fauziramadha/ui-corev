@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Progress } from "@/components/ui/progress"
 import { Button } from "@/components/ui/button"
 import { PLAYBACK_CONSTANTS } from "./constants/playback"
@@ -10,6 +11,7 @@ interface EpisodeAutoplayOverlayProps {
 }
 
 export function EpisodeAutoplayOverlay({ onNext, onCancel, show }: EpisodeAutoplayOverlayProps) {
+    const { t } = useTranslation("player")
     const [progress, setProgress] = useState(0)
     const duration = PLAYBACK_CONSTANTS.AUTOPLAY_NEXT_DELAY
 
@@ -41,14 +43,14 @@ export function EpisodeAutoplayOverlay({ onNext, onCancel, show }: EpisodeAutopl
     return (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md">
             <div className="w-full max-w-sm space-y-6 p-8 text-center">
-                <h3 className="text-2xl font-bold">Next Episode Starting</h3>
+                <h3 className="text-2xl font-bold">{t("autoplay.nextEpisode")}</h3>
                 <Progress value={progress} className="h-2" />
                 <div className="flex gap-4">
                     <Button onClick={onNext} className="flex-1">
-                        Play Now
+                        {t("autoplay.playingNow")}
                     </Button>
                     <Button onClick={onCancel} variant="outline" className="flex-1">
-                        Cancel
+                        {t("autoplay.cancel")}
                     </Button>
                 </div>
             </div>
