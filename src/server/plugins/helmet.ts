@@ -7,7 +7,7 @@ export async function registerHelmetPlugin(app: FastifyInstance) {
             directives: {
                 defaultSrc: ["'self'"],
 
-                connectSrc: ["'self'", "https://api.themoviedb.org", app.config.VITE_STANDALONE ? "*" : (app.config.VITE_OMSS_API_URL ?? "")],
+                connectSrc: ["'self'", "https://api.themoviedb.org", "https://image.tmdb.org", app.config.VITE_STANDALONE ? "*" : (app.config.VITE_OMSS_API_URL ?? "")],
 
                 imgSrc: ["'self'", "data:", "https://image.tmdb.org"],
 
