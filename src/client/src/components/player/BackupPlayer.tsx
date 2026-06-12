@@ -4,7 +4,7 @@ import { ChevronLeft } from "lucide-react"
 
 interface BackupPlayerProps {
     id: string
-    type: "movie" | "tv" | string
+    type: "movie" | "tv" | "anime" | string
     season?: number
     episode?: number
 }
@@ -12,9 +12,12 @@ interface BackupPlayerProps {
 export function BackupPlayer({ id, type, season, episode }: BackupPlayerProps) {
     const navigate = useNavigate()
 
-    // Fungsi peracik URL Embed Cadangan dari VidSrc
+    // Fungsi peracik URL Embed Cadangan
     const getEmbedUrl = () => {
-        if (type === "movie") {
+        if (type === "anime") {
+            // Rute khusus server Anime (Pastikan ID yang masuk sesuai dengan standar provider)
+            return `https://embed.filmu.in/anime/${id}/${season || 1}/${episode || 1}`
+        } else if (type === "movie") {
             return `https://vidsrc.net/embed/movie?tmdb=${id}`
         } else {
             return `https://vidsrc.net/embed/tv?tmdb=${id}&season=${season}&episode=${episode}`
