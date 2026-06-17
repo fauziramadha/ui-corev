@@ -17,25 +17,25 @@ export function useMediaSources(rawId: string, type: MediaType, season?: number,
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string>()
 
-    // PEMBERSIH ID: Menghapus spasi tersembunyi (Word Joiner) agar tidak terjadi error 404
-    const id = rawId.replace(/\D/g, '')
-
     useEffect(() => {
         async function fetchSources() {
             setIsLoading(true)
             setError(undefined) 
             
             try {
-                // 1. CEK CMS MANUAL LOKAL SECARA INSTAN
+                // 1. PEMBERSIH ID KHUSUS CMS: Ambil angkanya saja untuk database lokal kita
+                const numericId = rawId.replace(/\D/g, '')
+                
+                // 2. CEK CMS MANUAL LOKAL SECARA INSTAN
                 let cmsSource = null;
-                const dbKey = type === "tv" ? `tv_${id}_${season}_${episode}` : `movie_${id}`;
+                const dbKey = type === "tv" ? `tv_${numericId}_${season}_${episode}` : `movie_${numericId}`;
                 const manualUrl = manualCmsDatabase[dbKey];
 
                 if (manualUrl) {
                     cmsSource = {
                         id: `cms_${dbKey}`,
                         url: manualUrl,
-                        type: "iframe", 
+                        type: "embed", // PERBAIKAN: Harus "embed" agar lolos sensor OMSS SDK
                         streamable: true,
                         quality: "Auto",
                         provider: {
@@ -45,22 +45,23 @@ export function useMediaSources(rawId: string, type: MediaType, season?: number,
                     };
                 }
 
-                // 2. KETUK PINTU OMSS OTOMATIS
+                // 3. KETUK PINTU OMSS OTOMATIS
                 let omssResponse: SourceResponse | null = null;
                 let omssError: unknown = null;
                 
                 try {
                     if (type === "movie") {
-                        omssResponse = await omssService.getMovieSources(client, id)
+                        // PERBAIKAN: Gunakan rawId utuh agar pencarian OMSS tidak rusak (404)
+                        omssResponse = await omssService.getMovieSources(client, rawId)
                     } else if (season !== undefined && episode !== undefined) {
-                        omssResponse = await omssService.getTvSources(client, id, season, episode)
+                        omssResponse = await omssService.getTvSources(client, rawId, season, episode)
                     }
                 } catch (oErr) {
                     console.warn("OMSS API gagal merespons:", oErr);
                     omssError = oErr;
                 }
 
-                // 3. PENGGABUNGAN (HYBRID MERGING)
+                // 4. PENGGABUNGAN (HYBRID MERGING)
                 if (cmsSource) {
                     if (omssResponse) {
                         // Taruh Server 1 di urutan paling depan
@@ -87,7 +88,7 @@ export function useMediaSources(rawId: string, type: MediaType, season?: number,
         }
 
         fetchSources()
-    }, [id, type, season, episode, client])
+    }, [rawId, type, season, episode, client])
 
     return { sources, isLoading, error }
 }
