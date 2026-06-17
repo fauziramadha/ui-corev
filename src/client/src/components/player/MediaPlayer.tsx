@@ -44,20 +44,23 @@ export function MediaPlayer() {
         const video = videoRef.current
         if (!video || !selectedSource) return
 
+        // 1. VALIDASI OMSS V1.1: Pastikan tautan diizinkan untuk di-stream langsung di browser
+        if (selectedSource.streamable === false) {
+            setError("Sumber video ini tidak mendukung streaming langsung di web browser.")
+            setIsLoading(false)
+            return
+        }
+
         setIsLoading(true)
 
         if (selectedSource.type === "hls") {
             if (Hls.isSupported()) {
+                // 2. ANTI-CORS: Konfigurasi bersih tanpa injeksi custom headers manual
                 const hlsConfig: any = {
                     enableWorker: true,
                     lowLatencyMode: false,
-                }
-
-                if (selectedSource.headers) {
-                    hlsConfig.xhrSetup = (xhr: XMLHttpRequest, url: string) => {
-                        Object.entries(selectedSource.headers || {}).forEach(([key, value]) => {
-                            xhr.setRequestHeader(key, value as string)
-                        })
+                    xhrSetup: (xhr: XMLHttpRequest, url: string) => {
+                        xhr.withCredentials = false // Menjaga agar kredensial bawaan web tidak memancing blokir CORS
                     }
                 }
 
@@ -81,14 +84,17 @@ export function MediaPlayer() {
 
                 hls.on(Hls.Events.ERROR, (_, data) => {
                     if (data.fatal) {
-                        setError(`HLS Fatal Error: ${data.type}`)
+                        setError(`Gagal memutar konten (HLS Error: ${data.type})`)
+                        setIsLoading(false)
                     }
                 })
             } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
                 video.src = selectedSource.url
+                video.load() // Perintah paksa agar Safari tidak diam mematung
             }
         } else {
             video.src = selectedSource.url
+            video.load() // Perintah paksa untuk video mentah (.mp4)
         }
 
         return () => {
@@ -248,6 +254,13 @@ export function MediaPlayer() {
                 onPlaying={() => setIsLoading(false)}
                 onClick={togglePlay}
                 preload="auto"
+                // 3. PERBAIKAN UTAMA: Izin CORS untuk durasi video eksternal
+                crossOrigin="anonymous" 
+                // 4. PENANGKAP EROR: Menghindari layar hitam diam saat link mati
+                onError={() => {
+                    setError("Gagal memuat video. Tautan mungkin telah kedaluwarsa atau diblokir.")
+                    setIsLoading(false)
+                }}
                 poster={media?.backdropUrl.replace("w300", "original")}
                 playsInline
             />
