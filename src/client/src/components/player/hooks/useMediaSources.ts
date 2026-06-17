@@ -16,16 +16,15 @@ export function useMediaSources(id: string, type: MediaType, season?: number, ep
             setError(undefined) 
             
             try {
-                // 1. KETUK PINTU CMS MANUAL DI BACKEND
+                // 1. KETUK PINTU CMS MANUAL DI SERVER INTERNAL UI
                 let cmsSource = null;
                 try {
                     const query = type === "movie" 
                         ? `?type=movie&id=${id}` 
                         : `?type=tv&id=${id}&s=${season}&e=${episode}`;
                     
-                    // PERBAIKAN: Gunakan URL mutlak ke peladen backend-mu
-                    const backendUrl = "https://corev-one.vercel.app";
-                    const cmsRes = await fetch(`${backendUrl}/api/cms${query}`);
+                    // PERBAIKAN FINAL: Gunakan pemanggilan relatif langsung ke rute API UI
+                    const cmsRes = await fetch(`/api/cms${query}`);
                     
                     if (cmsRes.ok) {
                         const cmsJson = await cmsRes.json();
