@@ -44,6 +44,11 @@ export function MediaPlayer() {
         const video = videoRef.current
         if (!video || !selectedSource) return
 
+        // Jika tipenya embed/iframe, lewati inisialisasi HLS karena kita akan pakai tag <iframe>
+        if (selectedSource.type === "embed" || selectedSource.type === "iframe") {
+            return
+        }
+
         // 1. VALIDASI OMSS V1.1: Pastikan tautan diizinkan untuk di-stream langsung di browser
         if (selectedSource.streamable === false) {
             setError("Sumber video ini tidak mendukung streaming langsung di web browser.")
@@ -242,6 +247,22 @@ export function MediaPlayer() {
             />
         )
 
+    // PERBAIKAN KHUSUS FILM ASIA: Jika tipe sumber adalah embed atau iframe, jangan gunakan tag <video>
+    if (selectedSource.type === "embed" || selectedSource.type === "iframe") {
+        return (
+            <div className="h-screen w-full bg-black flex items-center justify-center">
+                <iframe
+                    src={selectedSource.url}
+                    className="h-full w-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    title="Movie Player"
+                />
+            </div>
+        )
+    }
+
+    // Jika tipenya adalah hls atau mp4 biasa (seperti film Barat), kodingan di bawah ini yang akan berjalan
     return (
         <div ref={containerRef} className="group relative h-screen w-full overflow-hidden" onMouseMove={handleMouseMove} onMouseLeave={() => setShowControls(false)}>
             <video
