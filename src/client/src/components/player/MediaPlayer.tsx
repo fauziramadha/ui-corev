@@ -48,10 +48,21 @@ export function MediaPlayer() {
 
         if (selectedSource.type === "hls") {
             if (Hls.isSupported()) {
-                const hls = new Hls({
+                const hlsConfig: any = {
                     enableWorker: true,
                     lowLatencyMode: false,
-                })
+                }
+
+                if (selectedSource.headers) {
+                    hlsConfig.xhrSetup = (xhr: XMLHttpRequest, url: string) => {
+                        Object.entries(selectedSource.headers || {}).forEach(([key, value]) => {
+                            xhr.setRequestHeader(key, value as string)
+                        })
+                    }
+                }
+
+                const hls = new Hls(hlsConfig)
+                
                 hls.loadSource(selectedSource.url)
                 hls.attachMedia(video)
                 hlsRef.current = hls
@@ -237,7 +248,6 @@ export function MediaPlayer() {
                 onPlaying={() => setIsLoading(false)}
                 onClick={togglePlay}
                 preload="auto"
-                crossOrigin="anonymous"
                 poster={media?.backdropUrl.replace("w300", "original")}
                 playsInline
             />
