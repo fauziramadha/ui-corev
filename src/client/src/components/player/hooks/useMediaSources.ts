@@ -4,11 +4,21 @@ import { omssService } from "../services/omss.service"
 import type { MediaType } from "../types/media.types"
 import type { SourceResponse } from "@omss/sdk"
 
-export function useMediaSources(id: string, type: MediaType, season?: number, episode?: number) {
+// --- BASIS DATA CMS MANUAL LOKAL ---
+// Letakkan tautan iframe manualmu di sini.
+const manualCmsDatabase: Record<string, string> = {
+    "movie_1339713": "https://vidsrc.to/embed/movie/1339713",
+    "movie_939243": "https://domain-lancar.com/embed/movie/939243",
+}
+
+export function useMediaSources(rawId: string, type: MediaType, season?: number, episode?: number) {
     const { client } = useOmss()
     const [sources, setSources] = useState<SourceResponse | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string>()
+
+    // PEMBERSIH ID: Menghapus spasi tersembunyi (Word Joiner) agar tidak terjadi error 404
+    const id = rawId.replace(/\D/g, '')
 
     useEffect(() => {
         async function fetchSources() {
@@ -16,24 +26,23 @@ export function useMediaSources(id: string, type: MediaType, season?: number, ep
             setError(undefined) 
             
             try {
-                // 1. KETUK PINTU CMS MANUAL DI SERVER INTERNAL UI
+                // 1. CEK CMS MANUAL LOKAL SECARA INSTAN
                 let cmsSource = null;
-                try {
-                    const query = type === "movie" 
-                        ? `?type=movie&id=${id}` 
-                        : `?type=tv&id=${id}&s=${season}&e=${episode}`;
-                    
-                    // PERBAIKAN FINAL: Gunakan pemanggilan relatif langsung ke rute API UI
-                    const cmsRes = await fetch(`/api/cms${query}`);
-                    
-                    if (cmsRes.ok) {
-                        const cmsJson = await cmsRes.json();
-                        if (cmsJson.success && cmsJson.data) {
-                            cmsSource = cmsJson.data;
+                const dbKey = type === "tv" ? `tv_${id}_${season}_${episode}` : `movie_${id}`;
+                const manualUrl = manualCmsDatabase[dbKey];
+
+                if (manualUrl) {
+                    cmsSource = {
+                        id: `cms_${dbKey}`,
+                        url: manualUrl,
+                        type: "iframe", 
+                        streamable: true,
+                        quality: "Auto",
+                        provider: {
+                            id: "server_vip",
+                            name: "Server 1 (VIP)" 
                         }
-                    }
-                } catch (cmsErr) {
-                    console.warn("Gagal mengecek CMS Manual, lanjut ke OMSS otomatis...", cmsErr);
+                    };
                 }
 
                 // 2. KETUK PINTU OMSS OTOMATIS
@@ -54,9 +63,11 @@ export function useMediaSources(id: string, type: MediaType, season?: number, ep
                 // 3. PENGGABUNGAN (HYBRID MERGING)
                 if (cmsSource) {
                     if (omssResponse) {
+                        // Taruh Server 1 di urutan paling depan
                         omssResponse.sources = [cmsSource, ...(omssResponse.sources || [])];
                         setSources(omssResponse);
                     } else {
+                        // Jika OMSS mati, Server 1 tetap menyelamatkan filmnya
                         setSources({
                             sources: [cmsSource],
                             subtitles: []
