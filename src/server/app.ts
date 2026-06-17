@@ -23,6 +23,8 @@ export async function buildApp() {
 
     // Register routes
     await registerHealthRoutes(app)
+    
+    // Rute API CMS Manual kini aktif
     await registerApiRoutes(app)
 
     // Catch-all route for SPA
