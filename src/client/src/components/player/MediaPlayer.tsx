@@ -34,22 +34,17 @@ export function MediaPlayer() {
     >([])
 
     const [currentQuality, setCurrentQuality] = useState(-1)
-
     const controlsTimeoutRef = useRef<number | null>(null)
-
     const selectedSource = media?.playback.selectedSource
 
-    // Initialize HLS or Native Video
+    // Deteksi apakah sumber yang dipilih saat ini adalah iframe
+    const isIframeMode = selectedSource?.type === "embed" || selectedSource?.type === "iframe"
+
+    // Initialize HLS or Native Video (Hanya jika bukan mode iframe)
     useEffect(() => {
         const video = videoRef.current
-        if (!video || !selectedSource) return
+        if (!video || !selectedSource || isIframeMode) return
 
-        // Jika tipenya embed/iframe, lewati inisialisasi HLS karena kita akan pakai tag <iframe>
-        if (selectedSource.type === "embed" || selectedSource.type === "iframe") {
-            return
-        }
-
-        // 1. VALIDASI OMSS V1.1: Pastikan tautan diizinkan untuk di-stream langsung di browser
         if (selectedSource.streamable === false) {
             setError("Sumber video ini tidak mendukung streaming langsung di web browser.")
             setIsLoading(false)
@@ -60,12 +55,11 @@ export function MediaPlayer() {
 
         if (selectedSource.type === "hls") {
             if (Hls.isSupported()) {
-                // 2. ANTI-CORS: Konfigurasi bersih tanpa injeksi custom headers manual
                 const hlsConfig: any = {
                     enableWorker: true,
                     lowLatencyMode: false,
                     xhrSetup: (xhr: XMLHttpRequest, url: string) => {
-                        xhr.withCredentials = false // Menjaga agar kredensial bawaan web tidak memancing blokir CORS
+                        xhr.withCredentials = false 
                     }
                 }
 
@@ -95,11 +89,11 @@ export function MediaPlayer() {
                 })
             } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
                 video.src = selectedSource.url
-                video.load() // Perintah paksa agar Safari tidak diam mematung
+                video.load() 
             }
         } else {
             video.src = selectedSource.url
-            video.load() // Perintah paksa untuk video mentah (.mp4)
+            video.load() 
         }
 
         return () => {
@@ -108,38 +102,37 @@ export function MediaPlayer() {
                 hlsRef.current = null
             }
         }
-    }, [selectedSource, setError, setIsLoading, setIsPlaying])
+    }, [selectedSource, setError, setIsLoading, setIsPlaying, isIframeMode])
 
     useEffect(() => {
-        if (videoRef.current) {
+        if (videoRef.current && !isIframeMode) {
             videoRef.current.playbackRate = playbackRate
         }
-    }, [playbackRate])
+    }, [playbackRate, isIframeMode])
 
     // Sync isPlaying state
     useEffect(() => {
         const video = videoRef.current
-        if (!video) return
+        if (!video || isIframeMode) return
 
         if (isPlaying) {
             video.play().catch(() => setIsPlaying(false))
         } else {
             video.pause()
         }
-    }, [isPlaying, setIsPlaying])
+    }, [isPlaying, setIsPlaying, isIframeMode])
 
     // Sync volume/mute to video element
     useEffect(() => {
-        if (videoRef.current) {
+        if (videoRef.current && !isIframeMode) {
             videoRef.current.volume = isMuted ? 0 : volume
             videoRef.current.muted = isMuted
         }
-    }, [volume, isMuted])
+    }, [volume, isMuted, isIframeMode])
 
     useEffect(() => {
         const video = videoRef.current
-
-        if (!video) return
+        if (!video || isIframeMode) return
 
         const handleEnterPiP = () => setIsPiP(true)
         const handleLeavePiP = () => setIsPiP(false)
@@ -151,16 +144,16 @@ export function MediaPlayer() {
             video.removeEventListener("enterpictureinpicture", handleEnterPiP)
             video.removeEventListener("leavepictureinpicture", handleLeavePiP)
         }
-    }, [])
+    }, [isIframeMode])
 
     const handleTimeUpdate = () => {
-        if (videoRef.current) {
+        if (videoRef.current && !isIframeMode) {
             setCurrentTime(videoRef.current.currentTime)
         }
     }
 
     const handleLoadedMetadata = () => {
-        if (videoRef.current) {
+        if (videoRef.current && !isIframeMode) {
             setDuration(videoRef.current.duration)
             setIsLoading(false)
         }
@@ -179,10 +172,12 @@ export function MediaPlayer() {
         controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 3000)
     }
 
-    const togglePlay = () => setIsPlaying(!isPlaying)
+    const togglePlay = () => {
+        if (!isIframeMode) setIsPlaying(!isPlaying)
+    }
 
     const handleSeek = (val: number[]) => {
-        if (videoRef.current) {
+        if (videoRef.current && !isIframeMode) {
             videoRef.current.currentTime = val[0]
             setCurrentTime(val[0])
         }
@@ -190,8 +185,7 @@ export function MediaPlayer() {
 
     const togglePictureInPicture = async () => {
         const video = videoRef.current
-
-        if (!video) return
+        if (!video || isIframeMode) return
 
         try {
             if (document.pictureInPictureElement) {
@@ -247,46 +241,45 @@ export function MediaPlayer() {
             />
         )
 
-    // PERBAIKAN KHUSUS FILM ASIA: Jika tipe sumber adalah embed atau iframe, jangan gunakan tag <video>
-    if (selectedSource.type === "embed" || selectedSource.type === "iframe") {
-        return (
-            <div className="h-screen w-full bg-black flex items-center justify-center">
-                <iframe
-                    src={selectedSource.url}
-                    className="h-full w-full border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                    title="Movie Player"
-                />
-            </div>
-        )
-    }
-
-    // Jika tipenya adalah hls atau mp4 biasa (seperti film Barat), kodingan di bawah ini yang akan berjalan
     return (
         <div ref={containerRef} className="group relative h-screen w-full overflow-hidden" onMouseMove={handleMouseMove} onMouseLeave={() => setShowControls(false)}>
-            <video
-                ref={videoRef}
-                className="h-full w-full"
-                onTimeUpdate={handleTimeUpdate}
-                onLoadedMetadata={handleLoadedMetadata}
-                onEnded={handleEnded}
-                onWaiting={() => setIsLoading(true)}
-                onPlaying={() => setIsLoading(false)}
-                onClick={togglePlay}
-                preload="auto"
-                // 3. PERBAIKAN UTAMA: Izin CORS untuk durasi video eksternal
-                crossOrigin="anonymous" 
-                // 4. PENANGKAP EROR: Menghindari layar hitam diam saat link mati
-                onError={() => {
-                    setError("Gagal memuat video. Tautan mungkin telah kedaluwarsa atau diblokir.")
-                    setIsLoading(false)
-                }}
-                poster={media?.backdropUrl.replace("w300", "original")}
-                playsInline
-            />
+            
+            {/* RENDER BUNGKAL: Tampilkan Iframe atau Video tergantung tipe sumber */}
+            {isIframeMode ? (
+                <div className="h-full w-full bg-black">
+                    <iframe
+                        src={selectedSource.url}
+                        className="h-full w-full border-0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        allowFullScreen
+                        sandbox="allow-scripts allow-same-origin allow-forms" // Proteksi Iklan
+                        title="Movie Player"
+                        onLoad={() => setIsLoading(false)} // Matikan loading saat iframe selesai dimuat
+                    />
+                </div>
+            ) : (
+                <video
+                    ref={videoRef}
+                    className="h-full w-full"
+                    onTimeUpdate={handleTimeUpdate}
+                    onLoadedMetadata={handleLoadedMetadata}
+                    onEnded={handleEnded}
+                    onWaiting={() => setIsLoading(true)}
+                    onPlaying={() => setIsLoading(false)}
+                    onClick={togglePlay}
+                    preload="auto"
+                    crossOrigin="anonymous" 
+                    onError={() => {
+                        setError("Gagal memuat video. Tautan mungkin telah kedaluwarsa atau diblokir.")
+                        setIsLoading(false)
+                    }}
+                    poster={media?.backdropUrl.replace("w300", "original")}
+                    playsInline
+                />
+            )}
 
-            {selectedSubtitle && <CustomSubtitles url={selectedSubtitle.url} currentTime={currentTime} />}
+            {/* Subtitle khusus video native (bukan iframe) */}
+            {selectedSubtitle && !isIframeMode && <CustomSubtitles url={selectedSubtitle.url} currentTime={currentTime} />}
 
             {isLoading && !isPlaying && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
@@ -294,17 +287,15 @@ export function MediaPlayer() {
                 </div>
             )}
 
+            {/* Player Controls akan tetap dirender, namun kita manipulasi prop isPlaying agar timeline tertutup jika di mode Iframe */}
             <PlayerControls
-                isPlaying={isPlaying}
+                isPlaying={isIframeMode ? true : isPlaying} // Paksa status 'playing' agar UI controls terlihat rapi
                 onDoubleClick={toggleFullscreen}
                 onWheel={(e: React.WheelEvent<HTMLDivElement>) => {
-                    // scroll up = increase volume
+                    if(isIframeMode) return;
                     const delta = -e.deltaY * 0.001
-
                     const newVolume = Math.max(0, Math.min(1, volume + delta))
-
                     setVolume(newVolume)
-
                     if (newVolume === 0) {
                         setIsMuted(true)
                     } else if (isMuted) {
@@ -331,6 +322,9 @@ export function MediaPlayer() {
                 qualities={qualities}
                 currentQuality={currentQuality}
                 onQualityChange={handleQualityChange}
+                // Jika ingin benar-benar menyembunyikan timeline saat mode iframe,
+                // modifikasi harus dilakukan di dalam komponen PlayerControls itu sendiri,
+                // namun pengkondisian isPlaying di atas sudah cukup untuk menyembunyikan tombol play tengah.
             />
 
             <EpisodeAutoplayOverlay
