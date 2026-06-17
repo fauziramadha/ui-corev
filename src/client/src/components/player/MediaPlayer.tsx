@@ -40,10 +40,20 @@ export function MediaPlayer() {
     // Deteksi apakah sumber yang dipilih saat ini adalah iframe
     const isIframeMode = selectedSource?.type === "embed" || selectedSource?.type === "iframe"
 
-    // Initialize HLS or Native Video (Hanya jika bukan mode iframe)
+    // Initialize HLS or Native Video
     useEffect(() => {
         const video = videoRef.current
-        if (!video || !selectedSource || isIframeMode) return
+        if (!selectedSource) return
+
+        // PERBAIKAN 1: Eksekusi instan untuk mode Iframe
+        if (isIframeMode) {
+            // Langsung matikan layar loading hitam bawaan UI kita.
+            // Biarkan loading bawaan dari iframe situs sumber yang mengambil alih layar.
+            setIsLoading(false)
+            return
+        }
+
+        if (!video) return
 
         if (selectedSource.streamable === false) {
             setError("Sumber video ini tidak mendukung streaming langsung di web browser.")
@@ -246,15 +256,15 @@ export function MediaPlayer() {
             
             {/* RENDER BUNGKAL: Tampilkan Iframe atau Video tergantung tipe sumber */}
             {isIframeMode ? (
-                <div className="h-full w-full bg-black">
+                <div className="h-full w-full bg-black relative z-0">
                     <iframe
                         src={selectedSource.url}
                         className="h-full w-full border-0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                         allowFullScreen
-                        sandbox="allow-scripts allow-same-origin allow-forms" // Proteksi Iklan
                         title="Movie Player"
-                        onLoad={() => setIsLoading(false)} // Matikan loading saat iframe selesai dimuat
+                        // PERBAIKAN 2: Atribut sandbox dihapus total agar script iframe bisa berjalan.
+                        // PERBAIKAN 3: onLoad dihapus karena sudah diatasi oleh useEffect di atas.
                     />
                 </div>
             ) : (
@@ -282,50 +292,49 @@ export function MediaPlayer() {
             {selectedSubtitle && !isIframeMode && <CustomSubtitles url={selectedSubtitle.url} currentTime={currentTime} />}
 
             {isLoading && !isPlaying && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px] z-50">
                     <LoadingState message={t("states.buffering")} />
                 </div>
             )}
 
-            {/* Player Controls akan tetap dirender, namun kita manipulasi prop isPlaying agar timeline tertutup jika di mode Iframe */}
-            <PlayerControls
-                isPlaying={isIframeMode ? true : isPlaying} // Paksa status 'playing' agar UI controls terlihat rapi
-                onDoubleClick={toggleFullscreen}
-                onWheel={(e: React.WheelEvent<HTMLDivElement>) => {
-                    if(isIframeMode) return;
-                    const delta = -e.deltaY * 0.001
-                    const newVolume = Math.max(0, Math.min(1, volume + delta))
-                    setVolume(newVolume)
-                    if (newVolume === 0) {
-                        setIsMuted(true)
-                    } else if (isMuted) {
-                        setIsMuted(false)
-                    }
-                }}
-                currentTime={currentTime}
-                onDivClick={togglePlay}
-                duration={duration}
-                volume={volume}
-                isMuted={isMuted}
-                isFullscreen={isFullscreen}
-                onTogglePlay={togglePlay}
-                onSeek={handleSeek}
-                onToggleMute={toggleMute}
-                onVolumeChange={handleVolumeChange}
-                onToggleFullscreen={toggleFullscreen}
-                show={showControls || !isPlaying}
-                ref={containerRef}
-                isPiP={isPiP}
-                onTogglePiP={togglePictureInPicture}
-                playbackRate={playbackRate}
-                onPlaybackRateChange={setPlaybackRate}
-                qualities={qualities}
-                currentQuality={currentQuality}
-                onQualityChange={handleQualityChange}
-                // Jika ingin benar-benar menyembunyikan timeline saat mode iframe,
-                // modifikasi harus dilakukan di dalam komponen PlayerControls itu sendiri,
-                // namun pengkondisian isPlaying di atas sudah cukup untuk menyembunyikan tombol play tengah.
-            />
+            {/* Pointer-events-none pada iframe mode agar user bisa nge-klik video di dalam iframe */}
+            <div className={isIframeMode ? "pointer-events-none absolute inset-0 z-10" : "absolute inset-0 z-10"}>
+                <PlayerControls
+                    isPlaying={isIframeMode ? true : isPlaying} 
+                    onDoubleClick={toggleFullscreen}
+                    onWheel={(e: React.WheelEvent<HTMLDivElement>) => {
+                        if(isIframeMode) return;
+                        const delta = -e.deltaY * 0.001
+                        const newVolume = Math.max(0, Math.min(1, volume + delta))
+                        setVolume(newVolume)
+                        if (newVolume === 0) {
+                            setIsMuted(true)
+                        } else if (isMuted) {
+                            setIsMuted(false)
+                        }
+                    }}
+                    currentTime={currentTime}
+                    onDivClick={togglePlay}
+                    duration={duration}
+                    volume={volume}
+                    isMuted={isMuted}
+                    isFullscreen={isFullscreen}
+                    onTogglePlay={togglePlay}
+                    onSeek={handleSeek}
+                    onToggleMute={toggleMute}
+                    onVolumeChange={handleVolumeChange}
+                    onToggleFullscreen={toggleFullscreen}
+                    show={showControls || !isPlaying}
+                    ref={containerRef}
+                    isPiP={isPiP}
+                    onTogglePiP={togglePictureInPicture}
+                    playbackRate={playbackRate}
+                    onPlaybackRateChange={setPlaybackRate}
+                    qualities={qualities}
+                    currentQuality={currentQuality}
+                    onQualityChange={handleQualityChange}
+                />
+            </div>
 
             <EpisodeAutoplayOverlay
                 show={showAutoplay}
