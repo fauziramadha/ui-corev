@@ -13,24 +13,27 @@ export function useMediaSources(id: string, type: MediaType, season?: number, ep
     useEffect(() => {
         async function fetchSources() {
             setIsLoading(true)
-            setError(undefined) // Reset status eror saat pengguna mencari film baru
+            setError(undefined) 
             
             try {
-                // 1. KETUK PINTU CMS MANUAL TERLEBIH DAHULU
+                // 1. KETUK PINTU CMS MANUAL DI BACKEND
                 let cmsSource = null;
                 try {
                     const query = type === "movie" 
                         ? `?type=movie&id=${id}` 
                         : `?type=tv&id=${id}&s=${season}&e=${episode}`;
-                        
-                    const cmsRes = await fetch(`/api/cms${query}`);
-                    const cmsJson = await cmsRes.json();
                     
-                    if (cmsJson.success && cmsJson.data) {
-                        cmsSource = cmsJson.data;
+                    // PERBAIKAN: Gunakan URL mutlak ke peladen backend-mu
+                    const backendUrl = "https://corev-one.vercel.app";
+                    const cmsRes = await fetch(`${backendUrl}/api/cms${query}`);
+                    
+                    if (cmsRes.ok) {
+                        const cmsJson = await cmsRes.json();
+                        if (cmsJson.success && cmsJson.data) {
+                            cmsSource = cmsJson.data;
+                        }
                     }
                 } catch (cmsErr) {
-                    // Jika API CMS error, abaikan diam-diam dan biarkan sistem lanjut mencari secara otomatis
                     console.warn("Gagal mengecek CMS Manual, lanjut ke OMSS otomatis...", cmsErr);
                 }
 
@@ -51,22 +54,18 @@ export function useMediaSources(id: string, type: MediaType, season?: number, ep
 
                 // 3. PENGGABUNGAN (HYBRID MERGING)
                 if (cmsSource) {
-                    // Jika kamu sudah menaruh link manual, letakkan ia di urutan teratas (Server 1)
                     if (omssResponse) {
                         omssResponse.sources = [cmsSource, ...(omssResponse.sources || [])];
                         setSources(omssResponse);
                     } else {
-                        // Fitur Tahan Banting: Jika mesin otomatis OMSS mati tapi CMS manual ada, putar CMS-nya!
                         setSources({
                             sources: [cmsSource],
                             subtitles: []
                         } as unknown as SourceResponse);
                     }
                 } else if (omssResponse) {
-                    // Jika CMS kosong, pakai murni data otomatis dari mesin OMSS
                     setSources(omssResponse);
                 } else {
-                    // Jika kedua sistem gagal total, tampilkan eror
                     setError(omssError instanceof Error ? omssError.message : String(omssError || "Gagal memuat sumber film"));
                 }
                 
