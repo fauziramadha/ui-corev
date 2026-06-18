@@ -44,7 +44,7 @@ export function MediaPlayer() {
         const video = videoRef.current
         if (!video || !selectedSource) return
 
-        // 1. VALIDASI OMSS V1.1: Pastikan tautan diizinkan untuk di-stream langsung di browser
+        // 1. VALIDASI OMSS V1.1
         if (selectedSource.streamable === false) {
             setError("Sumber video ini tidak mendukung streaming langsung di web browser.")
             setIsLoading(false)
@@ -55,12 +55,17 @@ export function MediaPlayer() {
 
         if (selectedSource.type === "hls") {
             if (Hls.isSupported()) {
-                // 2. ANTI-CORS: Konfigurasi bersih tanpa injeksi custom headers manual
+                // 2. MESIN TURBO: Konfigurasi Hls.js untuk manajemen buffer agresif
                 const hlsConfig: any = {
                     enableWorker: true,
                     lowLatencyMode: false,
+                    maxBufferLength: 15, // Gigi Satu: Jangan menimbun lebih dari 15 detik saat baru melompat
+                    maxMaxBufferLength: 30, // Gigi Dua: Batas absolut memori agar tidak sesak
+                    maxSeekHole: 2, // Toleransi jika data dari server scraping bolong/terlambat
+                    manifestLoadingTimeOut: 20000, // Beri waktu server merespons
+                    fragLoadingTimeOut: 20000,
                     xhrSetup: (xhr: XMLHttpRequest, url: string) => {
-                        xhr.withCredentials = false // Menjaga agar kredensial bawaan web tidak memancing blokir CORS
+                        xhr.withCredentials = false 
                     }
                 }
 
@@ -82,19 +87,35 @@ export function MediaPlayer() {
                     setIsLoading(false)
                 })
 
+                // 3. SISTEM P3K OTOMATIS: Penanganan saat macet melompat menit
                 hls.on(Hls.Events.ERROR, (_, data) => {
                     if (data.fatal) {
-                        setError(`Gagal memutar konten (HLS Error: ${data.type})`)
-                        setIsLoading(false)
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                // Jaringan tersedak, paksa muat ulang tanpa mematikan video
+                                console.warn("Jaringan tersedak, mencoba memulihkan...");
+                                hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                // Memori macet saat melompat menit, reset buffer secara gaib
+                                console.warn("Memori macet saat melompat, mereset buffer...");
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                setError(`Gagal memutar konten (HLS Error: ${data.details || data.type})`)
+                                hls.destroy();
+                                setIsLoading(false)
+                                break;
+                        }
                     }
                 })
             } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
                 video.src = selectedSource.url
-                video.load() // Perintah paksa agar Safari tidak diam mematung
+                video.load() 
             }
         } else {
             video.src = selectedSource.url
-            video.load() // Perintah paksa untuk video mentah (.mp4)
+            video.load() 
         }
 
         return () => {
@@ -176,10 +197,19 @@ export function MediaPlayer() {
 
     const togglePlay = () => setIsPlaying(!isPlaying)
 
+    // 4. PEMICU BERSIH MEMORI SAAT MELOMPAT (SEEKING)
     const handleSeek = (val: number[]) => {
         if (videoRef.current) {
+            // Berikan ilusi loading instan agar UI tidak terasa macet
+            setIsLoading(true);
+            
             videoRef.current.currentTime = val[0]
             setCurrentTime(val[0])
+            
+            // Opsional paksaan buang sisa memori jika di mode HLS
+            if (hlsRef.current && hlsRef.current.flushController) {
+                hlsRef.current.flushController.flush();
+            }
         }
     }
 
@@ -253,10 +283,8 @@ export function MediaPlayer() {
                 onWaiting={() => setIsLoading(true)}
                 onPlaying={() => setIsLoading(false)}
                 onClick={togglePlay}
-                preload="auto"
-                // 3. PERBAIKAN UTAMA: Izin CORS untuk durasi video eksternal
+                preload="metadata" // Meringankan beban awal browser agar tidak rakus data
                 crossOrigin="anonymous" 
-                // 4. PENANGKAP EROR: Menghindari layar hitam diam saat link mati
                 onError={() => {
                     setError("Gagal memuat video. Tautan mungkin telah kedaluwarsa atau diblokir.")
                     setIsLoading(false)
@@ -277,13 +305,9 @@ export function MediaPlayer() {
                 isPlaying={isPlaying}
                 onDoubleClick={toggleFullscreen}
                 onWheel={(e: React.WheelEvent<HTMLDivElement>) => {
-                    // scroll up = increase volume
                     const delta = -e.deltaY * 0.001
-
                     const newVolume = Math.max(0, Math.min(1, volume + delta))
-
                     setVolume(newVolume)
-
                     if (newVolume === 0) {
                         setIsMuted(true)
                     } else if (isMuted) {
