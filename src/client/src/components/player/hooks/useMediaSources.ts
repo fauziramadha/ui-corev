@@ -1,45 +1,35 @@
-import { useEffect } from "react"
-import { useTranslation } from "react-i18next"
+import { useEffect, useState } from "react"
+import { useOmss } from "@/hooks/use-omss"
+import { omssService } from "../services/omss.service"
 import type { MediaType } from "../types/media.types"
-import { useMediaDetails } from "./useMediaDetails"
-import { useMediaSources } from "./useMediaSources"
-import { mapMovieToUnified, mapTvEpisodeToUnified } from "../mappers/media.mapper"
-import { mapPlaybackResponse } from "../mappers/playback.mapper"
-import { useMediaWatchContext } from "../providers/MediaWatchProvider"
+import type { SourceResponse } from "@omss/sdk"
 
-export function useMediaWatch(id: string, type: MediaType, season?: number, episode?: number) {
-    const { setMedia, setError, setIsLoading } = useMediaWatchContext()
-    const { t } = useTranslation("player")
-    const { details, isLoading: detailsLoading, error: detailsError } = useMediaDetails(id, type, season, episode)
-    const { sources, isLoading: sourcesLoading, error: sourcesError } = useMediaSources(id, type, season, episode)
+export function useMediaSources(id: string, type: MediaType, season?: number, episode?: number) {
+    const { client } = useOmss()
+    const [sources, setSources] = useState<SourceResponse | null>(null)
+    const [isLoading, setIsLoading] = useState(true)
+    const [error, setError] = useState<string>()
 
     useEffect(() => {
-        if (detailsError || sourcesError) {
-            setError(detailsError || sourcesError)
-            return
-        }
-
-        if (!detailsLoading && !sourcesLoading && sources) {
-            const playback = mapPlaybackResponse(sources)
-
-            let unified
-            if (type === "movie" && details.movie) {
-                unified = mapMovieToUnified(details.movie, playback)
-            } else if (type === "tv" && details.show && details.episode) {
-                unified = mapTvEpisodeToUnified(details.show, details.episode, playback)
-            }
-
-            if (unified) {
-                setMedia(unified)
+        async function fetchSources() {
+            setIsLoading(true)
+            try {
+                if (type === "movie") {
+                    const res = await omssService.getMovieSources(client, id)
+                    setSources(res)
+                } else if (season !== undefined && episode !== undefined) {
+                    const res = await omssService.getTvSources(client, id, season, episode)
+                    setSources(res)
+                }
+            } catch (e) {
+                setError(e instanceof Error ? e.message : String(e))
+            } finally {
                 setIsLoading(false)
-            } else {
-                setError(t("states.error"))
             }
         }
-    }, [details, sources, detailsLoading, sourcesLoading, detailsError, sourcesError, type, setMedia, setError, setIsLoading])
 
-    return {
-        isLoading: detailsLoading || sourcesLoading,
-        error: detailsError || sourcesError,
-    }
+        fetchSources()
+    }, [id, type, season, episode, client])
+
+    return { sources, isLoading, error }
 }
