@@ -48,7 +48,7 @@ export function MediaPlayer() {
 
         if (selectedSource.type === "hls") {
             if (Hls.isSupported()) {
-                // MESIN TURBO HLS.JS DENGAN STANDAR OMSS V1.1
+                // MESIN TURBO HLS.JS (Untuk Android & Desktop)
                 const hlsConfig: any = {
                     enableWorker: true,
                     lowLatencyMode: false,
@@ -63,15 +63,8 @@ export function MediaPlayer() {
                     fragLoadingMaxRetry: Infinity,
                     levelLoadingMaxRetry: Infinity,
                     xhrSetup: (xhr: XMLHttpRequest, url: string) => {
-                        xhr.withCredentials = false;
-                        
-                        // INJEKSI HEADER OMSS v1.1: Menyuntikkan token/header dari SDK jika tersedia
-                        const sourceHeaders = (selectedSource as any).headers;
-                        if (sourceHeaders) {
-                            Object.entries(sourceHeaders).forEach(([key, value]) => {
-                                xhr.setRequestHeader(key, String(value));
-                            });
-                        }
+                        // Di OMSS v1.1 proxy akan menangani CORS, kredensial browser dimatikan
+                        xhr.withCredentials = false 
                     }
                 }
 
@@ -96,11 +89,9 @@ export function MediaPlayer() {
                     if (data.fatal) {
                         switch (data.type) {
                             case Hls.ErrorTypes.NETWORK_ERROR:
-                                console.warn("Jaringan tersendat, memulihkan koneksi via proxy...");
                                 hls.startLoad();
                                 break;
                             case Hls.ErrorTypes.MEDIA_ERROR:
-                                console.warn("Memori macet, mereset buffer...");
                                 hls.recoverMediaError();
                                 break;
                             default:
@@ -109,11 +100,6 @@ export function MediaPlayer() {
                                 setIsLoading(false)
                                 break;
                         }
-                    } else if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
-                        // Penyembuhan Darurat untuk micro-stuttering
-                        if (video.currentTime) {
-                            video.currentTime += 0.01;
-                        }
                     }
                 })
             } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
@@ -121,8 +107,9 @@ export function MediaPlayer() {
                 video.src = selectedSource.url
                 video.load()
 
-                // P3K KHUSUS iOS: Memerangi pemutusan dari Apple
+                // P3K KHUSUS iOS: Memerangi pemutusan 1 Menit dari Apple
                 const handleAppleStalled = () => {
+                    console.warn("Mesin Apple tersumbat, memancing ulang koneksi...");
                     if (!video.paused && video.networkState === HTMLMediaElement.NETWORK_IDLE) {
                         const current = video.currentTime;
                         video.load();
@@ -132,6 +119,7 @@ export function MediaPlayer() {
                 };
 
                 const handleAppleError = () => {
+                    console.warn("Koneksi Apple terputus, menyambung ulang paksa...");
                     const current = video.currentTime;
                     video.load();
                     video.currentTime = current;
