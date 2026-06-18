@@ -44,47 +44,31 @@ export function MediaPlayer() {
         const video = videoRef.current
         if (!video || !selectedSource) return
 
-        if (selectedSource.streamable === false) {
-            setError("Sumber video ini tidak mendukung streaming langsung di web browser.")
-            setIsLoading(false)
-            return
-        }
-
         setIsLoading(true)
 
         if (selectedSource.type === "hls") {
             if (Hls.isSupported()) {
-                
-                // MESIN HYBRID V2: Penggabungan Solusi A, B, dan C
+                // MESIN TURBO HLS.JS (Untuk Android & Desktop)
                 const hlsConfig: any = {
                     enableWorker: true,
                     lowLatencyMode: false,
-                    
-                    // SOLUSI A: Matikan batas ukuran Megabyte, utamakan durasi waktu
-                    maxBufferSize: 0, // 0 = Tanpa batas memori MB (Biarkan buffer panjang)
-                    maxBufferLength: 60, // Tarik data sampai 60 detik ke depan
-                    maxMaxBufferLength: 120, // Tabungan cadangan hingga 2 menit jika internet sedang sangat kencang
-                    
-                    // SOLUSI C: Perlebar celah toleransi agar video bolong langsung dilompati tanpa macet
+                    maxBufferSize: 0, 
+                    maxBufferLength: 60, 
+                    maxMaxBufferLength: 120, 
                     maxSeekHole: 5, 
-
-                    // SOLUSI B: Timeout Agresif (Jangan mau menunggu lama jika server bengong)
-                    manifestLoadingTimeOut: 3000, // Putus setelah 3 detik
-                    fragLoadingTimeOut: 5000, // Putus setelah 5 detik dan ulangi
+                    manifestLoadingTimeOut: 3000, 
+                    fragLoadingTimeOut: 5000, 
                     levelLoadingTimeOut: 5000,
-                    
-                    // Auto-Retry tanpa batas untuk menembus tembok blokir server
                     manifestLoadingMaxRetry: Infinity,
                     fragLoadingMaxRetry: Infinity,
                     levelLoadingMaxRetry: Infinity,
-
                     xhrSetup: (xhr: XMLHttpRequest, url: string) => {
+                        // Di OMSS v1.1 proxy akan menangani CORS, kredensial browser dimatikan
                         xhr.withCredentials = false 
                     }
                 }
 
                 const hls = new Hls(hlsConfig)
-                
                 hls.loadSource(selectedSource.url)
                 hls.attachMedia(video)
                 hlsRef.current = hls
@@ -105,37 +89,56 @@ export function MediaPlayer() {
                     if (data.fatal) {
                         switch (data.type) {
                             case Hls.ErrorTypes.NETWORK_ERROR:
-                                console.warn("Jaringan terputus paksa (Tembok 1 Menit), menyambung kilat...");
                                 hls.startLoad();
                                 break;
                             case Hls.ErrorTypes.MEDIA_ERROR:
-                                console.warn("Memori tersumbat saat melompat, membongkar pipa...");
                                 hls.recoverMediaError();
                                 break;
                             default:
-                                setError(`Gagal memutar konten (HLS Error: ${data.details || data.type})`)
+                                setError(`HLS Fatal Error: ${data.type}`)
                                 hls.destroy();
                                 setIsLoading(false)
                                 break;
                         }
-                    } else {
-                        // Penyembuhan Darurat: Jika macet biasa tapi tidak fatal (seperti buffering abadi)
-                        if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
-                            console.warn("Buffer Stalled terdeteksi, memaksa mesin melompat milidetik...");
-                            // Geser video 0.1 detik ke depan untuk memancing aliran data baru dari server
-                            if (video.currentTime) {
-                                video.currentTime += 0.1;
-                            }
-                        }
                     }
                 })
             } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
+                // MESIN BAWAAN APPLE (Untuk iOS Safari)
                 video.src = selectedSource.url
-                video.load() 
+                video.load()
+
+                // P3K KHUSUS iOS: Memerangi pemutusan 1 Menit dari Apple
+                const handleAppleStalled = () => {
+                    console.warn("Mesin Apple tersumbat, memancing ulang koneksi...");
+                    if (!video.paused && video.networkState === HTMLMediaElement.NETWORK_IDLE) {
+                        const current = video.currentTime;
+                        video.load();
+                        video.currentTime = current;
+                        video.play().catch(() => {});
+                    }
+                };
+
+                const handleAppleError = () => {
+                    console.warn("Koneksi Apple terputus, menyambung ulang paksa...");
+                    const current = video.currentTime;
+                    video.load();
+                    video.currentTime = current;
+                    video.play().catch(() => {});
+                };
+
+                video.addEventListener('stalled', handleAppleStalled);
+                video.addEventListener('suspend', handleAppleStalled);
+                video.addEventListener('error', handleAppleError);
+
+                return () => {
+                    video.removeEventListener('stalled', handleAppleStalled);
+                    video.removeEventListener('suspend', handleAppleStalled);
+                    video.removeEventListener('error', handleAppleError);
+                }
             }
         } else {
             video.src = selectedSource.url
-            video.load() 
+            video.load()
         }
 
         return () => {
@@ -222,7 +225,6 @@ export function MediaPlayer() {
             setIsLoading(true);
             videoRef.current.currentTime = val[0]
             setCurrentTime(val[0])
-            // Biarkan Hls.js otomatis mengatur pencarian dengan buffer tak terbatas barunya
         }
     }
 
@@ -294,16 +296,11 @@ export function MediaPlayer() {
                 onLoadedMetadata={handleLoadedMetadata}
                 onEnded={handleEnded}
                 onWaiting={() => setIsLoading(true)}
-                onPlaying={() => {
-                    setIsLoading(false); 
-                }}
+                onPlaying={() => setIsLoading(false)}
                 onClick={togglePlay}
-                preload="metadata" 
-                crossOrigin="anonymous" 
-                onError={() => {
-                    setError("Gagal memuat video. Tautan mungkin telah kedaluwarsa atau diblokir.")
-                    setIsLoading(false)
-                }}
+                preload="auto"
+                // Menggunakan crossOrigin khusus agar OMSS proxy dapat memproses subtitel tanpa bentrok CORS
+                crossOrigin="anonymous"
                 poster={media?.backdropUrl.replace("w300", "original")}
                 playsInline
             />
