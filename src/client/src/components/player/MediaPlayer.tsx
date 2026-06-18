@@ -54,16 +54,30 @@ export function MediaPlayer() {
 
         if (selectedSource.type === "hls") {
             if (Hls.isSupported()) {
-                // MESIN HYBRID: Keseimbangan antara respon cepat dan nafas panjang
+                
+                // MESIN HYBRID V2: Penggabungan Solusi A, B, dan C
                 const hlsConfig: any = {
                     enableWorker: true,
                     lowLatencyMode: false,
-                    // Diperlebar agar tidak cepat kehabisan bensin setelah melompat
-                    maxBufferLength: 30, 
-                    maxMaxBufferLength: 60, 
-                    maxSeekHole: 2, 
-                    manifestLoadingTimeOut: 20000, 
-                    fragLoadingTimeOut: 20000,
+                    
+                    // SOLUSI A: Matikan batas ukuran Megabyte, utamakan durasi waktu
+                    maxBufferSize: 0, // 0 = Tanpa batas memori MB (Biarkan buffer panjang)
+                    maxBufferLength: 60, // Tarik data sampai 60 detik ke depan
+                    maxMaxBufferLength: 120, // Tabungan cadangan hingga 2 menit jika internet sedang sangat kencang
+                    
+                    // SOLUSI C: Perlebar celah toleransi agar video bolong langsung dilompati tanpa macet
+                    maxSeekHole: 5, 
+
+                    // SOLUSI B: Timeout Agresif (Jangan mau menunggu lama jika server bengong)
+                    manifestLoadingTimeOut: 3000, // Putus setelah 3 detik
+                    fragLoadingTimeOut: 5000, // Putus setelah 5 detik dan ulangi
+                    levelLoadingTimeOut: 5000,
+                    
+                    // Auto-Retry tanpa batas untuk menembus tembok blokir server
+                    manifestLoadingMaxRetry: Infinity,
+                    fragLoadingMaxRetry: Infinity,
+                    levelLoadingMaxRetry: Infinity,
+
                     xhrSetup: (xhr: XMLHttpRequest, url: string) => {
                         xhr.withCredentials = false 
                     }
@@ -91,11 +105,11 @@ export function MediaPlayer() {
                     if (data.fatal) {
                         switch (data.type) {
                             case Hls.ErrorTypes.NETWORK_ERROR:
-                                console.warn("Jaringan tersedak, mencoba memulihkan...");
+                                console.warn("Jaringan terputus paksa (Tembok 1 Menit), menyambung kilat...");
                                 hls.startLoad();
                                 break;
                             case Hls.ErrorTypes.MEDIA_ERROR:
-                                console.warn("Memori macet saat melompat, mereset buffer...");
+                                console.warn("Memori tersumbat saat melompat, membongkar pipa...");
                                 hls.recoverMediaError();
                                 break;
                             default:
@@ -103,6 +117,15 @@ export function MediaPlayer() {
                                 hls.destroy();
                                 setIsLoading(false)
                                 break;
+                        }
+                    } else {
+                        // Penyembuhan Darurat: Jika macet biasa tapi tidak fatal (seperti buffering abadi)
+                        if (data.details === Hls.ErrorDetails.BUFFER_STALLED_ERROR) {
+                            console.warn("Buffer Stalled terdeteksi, memaksa mesin melompat milidetik...");
+                            // Geser video 0.1 detik ke depan untuk memancing aliran data baru dari server
+                            if (video.currentTime) {
+                                video.currentTime += 0.1;
+                            }
                         }
                     }
                 })
@@ -194,13 +217,12 @@ export function MediaPlayer() {
 
     const togglePlay = () => setIsPlaying(!isPlaying)
 
-    // PEMICU BERSIH: Dibuat lebih kalem agar server pihak ketiga tidak ngambek
     const handleSeek = (val: number[]) => {
         if (videoRef.current) {
             setIsLoading(true);
             videoRef.current.currentTime = val[0]
             setCurrentTime(val[0])
-            // Catatan: hls.flush() Dihapus agar peladen memiliki waktu sinkronisasi potongan memori
+            // Biarkan Hls.js otomatis mengatur pencarian dengan buffer tak terbatas barunya
         }
     }
 
@@ -273,7 +295,7 @@ export function MediaPlayer() {
                 onEnded={handleEnded}
                 onWaiting={() => setIsLoading(true)}
                 onPlaying={() => {
-                    setIsLoading(false); // Paksa hapus layar loading saat video mulai jalan
+                    setIsLoading(false); 
                 }}
                 onClick={togglePlay}
                 preload="metadata" 
