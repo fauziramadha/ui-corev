@@ -44,7 +44,6 @@ export function MediaPlayer() {
         const video = videoRef.current
         if (!video || !selectedSource) return
 
-        // 1. VALIDASI OMSS V1.1
         if (selectedSource.streamable === false) {
             setError("Sumber video ini tidak mendukung streaming langsung di web browser.")
             setIsLoading(false)
@@ -55,14 +54,15 @@ export function MediaPlayer() {
 
         if (selectedSource.type === "hls") {
             if (Hls.isSupported()) {
-                // 2. MESIN TURBO: Konfigurasi Hls.js untuk manajemen buffer agresif
+                // MESIN HYBRID: Keseimbangan antara respon cepat dan nafas panjang
                 const hlsConfig: any = {
                     enableWorker: true,
                     lowLatencyMode: false,
-                    maxBufferLength: 15, // Gigi Satu: Jangan menimbun lebih dari 15 detik saat baru melompat
-                    maxMaxBufferLength: 30, // Gigi Dua: Batas absolut memori agar tidak sesak
-                    maxSeekHole: 2, // Toleransi jika data dari server scraping bolong/terlambat
-                    manifestLoadingTimeOut: 20000, // Beri waktu server merespons
+                    // Diperlebar agar tidak cepat kehabisan bensin setelah melompat
+                    maxBufferLength: 30, 
+                    maxMaxBufferLength: 60, 
+                    maxSeekHole: 2, 
+                    manifestLoadingTimeOut: 20000, 
                     fragLoadingTimeOut: 20000,
                     xhrSetup: (xhr: XMLHttpRequest, url: string) => {
                         xhr.withCredentials = false 
@@ -87,17 +87,14 @@ export function MediaPlayer() {
                     setIsLoading(false)
                 })
 
-                // 3. SISTEM P3K OTOMATIS: Penanganan saat macet melompat menit
                 hls.on(Hls.Events.ERROR, (_, data) => {
                     if (data.fatal) {
                         switch (data.type) {
                             case Hls.ErrorTypes.NETWORK_ERROR:
-                                // Jaringan tersedak, paksa muat ulang tanpa mematikan video
                                 console.warn("Jaringan tersedak, mencoba memulihkan...");
                                 hls.startLoad();
                                 break;
                             case Hls.ErrorTypes.MEDIA_ERROR:
-                                // Memori macet saat melompat menit, reset buffer secara gaib
                                 console.warn("Memori macet saat melompat, mereset buffer...");
                                 hls.recoverMediaError();
                                 break;
@@ -197,19 +194,13 @@ export function MediaPlayer() {
 
     const togglePlay = () => setIsPlaying(!isPlaying)
 
-    // 4. PEMICU BERSIH MEMORI SAAT MELOMPAT (SEEKING)
+    // PEMICU BERSIH: Dibuat lebih kalem agar server pihak ketiga tidak ngambek
     const handleSeek = (val: number[]) => {
         if (videoRef.current) {
-            // Berikan ilusi loading instan agar UI tidak terasa macet
             setIsLoading(true);
-            
             videoRef.current.currentTime = val[0]
             setCurrentTime(val[0])
-            
-            // Opsional paksaan buang sisa memori jika di mode HLS
-            if (hlsRef.current && hlsRef.current.flushController) {
-                hlsRef.current.flushController.flush();
-            }
+            // Catatan: hls.flush() Dihapus agar peladen memiliki waktu sinkronisasi potongan memori
         }
     }
 
@@ -281,9 +272,11 @@ export function MediaPlayer() {
                 onLoadedMetadata={handleLoadedMetadata}
                 onEnded={handleEnded}
                 onWaiting={() => setIsLoading(true)}
-                onPlaying={() => setIsLoading(false)}
+                onPlaying={() => {
+                    setIsLoading(false); // Paksa hapus layar loading saat video mulai jalan
+                }}
                 onClick={togglePlay}
-                preload="metadata" // Meringankan beban awal browser agar tidak rakus data
+                preload="metadata" 
                 crossOrigin="anonymous" 
                 onError={() => {
                     setError("Gagal memuat video. Tautan mungkin telah kedaluwarsa atau diblokir.")
