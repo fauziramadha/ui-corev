@@ -34,27 +34,17 @@ export function MediaPlayer() {
     >([])
 
     const [currentQuality, setCurrentQuality] = useState(-1)
-    const controlsTimeoutRef = useRef<number | null>(null)
-    const selectedSource = media?.playback.selectedSource
 
-    // Deteksi apakah sumber yang dipilih saat ini adalah iframe
-    const isIframeMode = selectedSource?.type === "embed" || selectedSource?.type === "iframe"
+    const controlsTimeoutRef = useRef<number | null>(null)
+
+    const selectedSource = media?.playback.selectedSource
 
     // Initialize HLS or Native Video
     useEffect(() => {
         const video = videoRef.current
-        if (!selectedSource) return
+        if (!video || !selectedSource) return
 
-        // PERBAIKAN 1: Eksekusi instan untuk mode Iframe
-        if (isIframeMode) {
-            // Langsung matikan layar loading hitam bawaan UI kita.
-            // Biarkan loading bawaan dari iframe situs sumber yang mengambil alih layar.
-            setIsLoading(false)
-            return
-        }
-
-        if (!video) return
-
+        // 1. VALIDASI OMSS V1.1: Pastikan tautan diizinkan untuk di-stream langsung di browser
         if (selectedSource.streamable === false) {
             setError("Sumber video ini tidak mendukung streaming langsung di web browser.")
             setIsLoading(false)
@@ -65,11 +55,12 @@ export function MediaPlayer() {
 
         if (selectedSource.type === "hls") {
             if (Hls.isSupported()) {
+                // 2. ANTI-CORS: Konfigurasi bersih tanpa injeksi custom headers manual
                 const hlsConfig: any = {
                     enableWorker: true,
                     lowLatencyMode: false,
                     xhrSetup: (xhr: XMLHttpRequest, url: string) => {
-                        xhr.withCredentials = false 
+                        xhr.withCredentials = false // Menjaga agar kredensial bawaan web tidak memancing blokir CORS
                     }
                 }
 
@@ -99,11 +90,11 @@ export function MediaPlayer() {
                 })
             } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
                 video.src = selectedSource.url
-                video.load() 
+                video.load() // Perintah paksa agar Safari tidak diam mematung
             }
         } else {
             video.src = selectedSource.url
-            video.load() 
+            video.load() // Perintah paksa untuk video mentah (.mp4)
         }
 
         return () => {
@@ -112,37 +103,38 @@ export function MediaPlayer() {
                 hlsRef.current = null
             }
         }
-    }, [selectedSource, setError, setIsLoading, setIsPlaying, isIframeMode])
+    }, [selectedSource, setError, setIsLoading, setIsPlaying])
 
     useEffect(() => {
-        if (videoRef.current && !isIframeMode) {
+        if (videoRef.current) {
             videoRef.current.playbackRate = playbackRate
         }
-    }, [playbackRate, isIframeMode])
+    }, [playbackRate])
 
     // Sync isPlaying state
     useEffect(() => {
         const video = videoRef.current
-        if (!video || isIframeMode) return
+        if (!video) return
 
         if (isPlaying) {
             video.play().catch(() => setIsPlaying(false))
         } else {
             video.pause()
         }
-    }, [isPlaying, setIsPlaying, isIframeMode])
+    }, [isPlaying, setIsPlaying])
 
     // Sync volume/mute to video element
     useEffect(() => {
-        if (videoRef.current && !isIframeMode) {
+        if (videoRef.current) {
             videoRef.current.volume = isMuted ? 0 : volume
             videoRef.current.muted = isMuted
         }
-    }, [volume, isMuted, isIframeMode])
+    }, [volume, isMuted])
 
     useEffect(() => {
         const video = videoRef.current
-        if (!video || isIframeMode) return
+
+        if (!video) return
 
         const handleEnterPiP = () => setIsPiP(true)
         const handleLeavePiP = () => setIsPiP(false)
@@ -154,16 +146,16 @@ export function MediaPlayer() {
             video.removeEventListener("enterpictureinpicture", handleEnterPiP)
             video.removeEventListener("leavepictureinpicture", handleLeavePiP)
         }
-    }, [isIframeMode])
+    }, [])
 
     const handleTimeUpdate = () => {
-        if (videoRef.current && !isIframeMode) {
+        if (videoRef.current) {
             setCurrentTime(videoRef.current.currentTime)
         }
     }
 
     const handleLoadedMetadata = () => {
-        if (videoRef.current && !isIframeMode) {
+        if (videoRef.current) {
             setDuration(videoRef.current.duration)
             setIsLoading(false)
         }
@@ -182,12 +174,10 @@ export function MediaPlayer() {
         controlsTimeoutRef.current = setTimeout(() => setShowControls(false), 3000)
     }
 
-    const togglePlay = () => {
-        if (!isIframeMode) setIsPlaying(!isPlaying)
-    }
+    const togglePlay = () => setIsPlaying(!isPlaying)
 
     const handleSeek = (val: number[]) => {
-        if (videoRef.current && !isIframeMode) {
+        if (videoRef.current) {
             videoRef.current.currentTime = val[0]
             setCurrentTime(val[0])
         }
@@ -195,7 +185,8 @@ export function MediaPlayer() {
 
     const togglePictureInPicture = async () => {
         const video = videoRef.current
-        if (!video || isIframeMode) return
+
+        if (!video) return
 
         try {
             if (document.pictureInPictureElement) {
@@ -253,88 +244,73 @@ export function MediaPlayer() {
 
     return (
         <div ref={containerRef} className="group relative h-screen w-full overflow-hidden" onMouseMove={handleMouseMove} onMouseLeave={() => setShowControls(false)}>
-            
-            {/* RENDER BUNGKAL: Tampilkan Iframe atau Video tergantung tipe sumber */}
-            {isIframeMode ? (
-                <div className="h-full w-full bg-black relative z-0">
-                    <iframe
-                        src={selectedSource.url}
-                        className="h-full w-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        allowFullScreen
-                        title="Movie Player"
-                        // PERBAIKAN 2: Atribut sandbox dihapus total agar script iframe bisa berjalan.
-                        // PERBAIKAN 3: onLoad dihapus karena sudah diatasi oleh useEffect di atas.
-                    />
-                </div>
-            ) : (
-                <video
-                    ref={videoRef}
-                    className="h-full w-full"
-                    onTimeUpdate={handleTimeUpdate}
-                    onLoadedMetadata={handleLoadedMetadata}
-                    onEnded={handleEnded}
-                    onWaiting={() => setIsLoading(true)}
-                    onPlaying={() => setIsLoading(false)}
-                    onClick={togglePlay}
-                    preload="auto"
-                    crossOrigin="anonymous" 
-                    onError={() => {
-                        setError("Gagal memuat video. Tautan mungkin telah kedaluwarsa atau diblokir.")
-                        setIsLoading(false)
-                    }}
-                    poster={media?.backdropUrl.replace("w300", "original")}
-                    playsInline
-                />
-            )}
+            <video
+                ref={videoRef}
+                className="h-full w-full"
+                onTimeUpdate={handleTimeUpdate}
+                onLoadedMetadata={handleLoadedMetadata}
+                onEnded={handleEnded}
+                onWaiting={() => setIsLoading(true)}
+                onPlaying={() => setIsLoading(false)}
+                onClick={togglePlay}
+                preload="auto"
+                // 3. PERBAIKAN UTAMA: Izin CORS untuk durasi video eksternal
+                crossOrigin="anonymous" 
+                // 4. PENANGKAP EROR: Menghindari layar hitam diam saat link mati
+                onError={() => {
+                    setError("Gagal memuat video. Tautan mungkin telah kedaluwarsa atau diblokir.")
+                    setIsLoading(false)
+                }}
+                poster={media?.backdropUrl.replace("w300", "original")}
+                playsInline
+            />
 
-            {/* Subtitle khusus video native (bukan iframe) */}
-            {selectedSubtitle && !isIframeMode && <CustomSubtitles url={selectedSubtitle.url} currentTime={currentTime} />}
+            {selectedSubtitle && <CustomSubtitles url={selectedSubtitle.url} currentTime={currentTime} />}
 
             {isLoading && !isPlaying && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px] z-50">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
                     <LoadingState message={t("states.buffering")} />
                 </div>
             )}
 
-            {/* Pointer-events-none pada iframe mode agar user bisa nge-klik video di dalam iframe */}
-            <div className={isIframeMode ? "pointer-events-none absolute inset-0 z-10" : "absolute inset-0 z-10"}>
-                <PlayerControls
-                    isPlaying={isIframeMode ? true : isPlaying} 
-                    onDoubleClick={toggleFullscreen}
-                    onWheel={(e: React.WheelEvent<HTMLDivElement>) => {
-                        if(isIframeMode) return;
-                        const delta = -e.deltaY * 0.001
-                        const newVolume = Math.max(0, Math.min(1, volume + delta))
-                        setVolume(newVolume)
-                        if (newVolume === 0) {
-                            setIsMuted(true)
-                        } else if (isMuted) {
-                            setIsMuted(false)
-                        }
-                    }}
-                    currentTime={currentTime}
-                    onDivClick={togglePlay}
-                    duration={duration}
-                    volume={volume}
-                    isMuted={isMuted}
-                    isFullscreen={isFullscreen}
-                    onTogglePlay={togglePlay}
-                    onSeek={handleSeek}
-                    onToggleMute={toggleMute}
-                    onVolumeChange={handleVolumeChange}
-                    onToggleFullscreen={toggleFullscreen}
-                    show={showControls || !isPlaying}
-                    ref={containerRef}
-                    isPiP={isPiP}
-                    onTogglePiP={togglePictureInPicture}
-                    playbackRate={playbackRate}
-                    onPlaybackRateChange={setPlaybackRate}
-                    qualities={qualities}
-                    currentQuality={currentQuality}
-                    onQualityChange={handleQualityChange}
-                />
-            </div>
+            <PlayerControls
+                isPlaying={isPlaying}
+                onDoubleClick={toggleFullscreen}
+                onWheel={(e: React.WheelEvent<HTMLDivElement>) => {
+                    // scroll up = increase volume
+                    const delta = -e.deltaY * 0.001
+
+                    const newVolume = Math.max(0, Math.min(1, volume + delta))
+
+                    setVolume(newVolume)
+
+                    if (newVolume === 0) {
+                        setIsMuted(true)
+                    } else if (isMuted) {
+                        setIsMuted(false)
+                    }
+                }}
+                currentTime={currentTime}
+                onDivClick={togglePlay}
+                duration={duration}
+                volume={volume}
+                isMuted={isMuted}
+                isFullscreen={isFullscreen}
+                onTogglePlay={togglePlay}
+                onSeek={handleSeek}
+                onToggleMute={toggleMute}
+                onVolumeChange={handleVolumeChange}
+                onToggleFullscreen={toggleFullscreen}
+                show={showControls || !isPlaying}
+                ref={containerRef}
+                isPiP={isPiP}
+                onTogglePiP={togglePictureInPicture}
+                playbackRate={playbackRate}
+                onPlaybackRateChange={setPlaybackRate}
+                qualities={qualities}
+                currentQuality={currentQuality}
+                onQualityChange={handleQualityChange}
+            />
 
             <EpisodeAutoplayOverlay
                 show={showAutoplay}
